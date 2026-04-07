@@ -2,12 +2,13 @@
 """
 FastAPI server for RL/MDP Disaster Response Evaluation.
 Hardened for UI Dashboard: Handles JSON serialization and State Tracking.
+Bulletproof /reset: Handles empty/null POST bodies for automated checkers.
 """
 
 import os
 import json
 from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Response, Request
 from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
@@ -19,7 +20,7 @@ from tasks import TASKS
 app = FastAPI(
     title="Disaster Response RL Environment",
     description="Gymnasium-standard LLM evaluation environment for emergency dispatch coordination.",
-    version="2.0.0"
+    version="2.0.1"
 )
 
 # Global store for active environments (task_id -> env instance)
@@ -52,9 +53,6 @@ async def get_tasks():
 # ------------------------------------------------------------------
 # Request schemas
 # ------------------------------------------------------------------
-class ResetRequest(BaseModel):
-    task_id: Optional[str] = "single_incident_response"
-
 class StepRequest(BaseModel):
     task_id: Optional[str] = "single_incident_response"
     dispatches: List[Dict[str, str]] = [] 
@@ -64,9 +62,21 @@ class StepRequest(BaseModel):
 # Endpoints
 # ------------------------------------------------------------------
 @app.post("/reset")
-async def reset(request: ResetRequest):
-    """Resets the environment to its initial state."""
-    task_id = request.task_id or "single_incident_response"
+async def reset(request: Request):
+    """
+    Resets the environment to its initial state.
+    Hardened to accept empty or malformed POST bodies.
+    """
+    try:
+        # Checkbox: Bulletproof JSON parsing
+        data = await request.json()
+    except Exception:
+        data = {}
+    
+    if data is None: data = {}
+
+    task_id = data.get("task_id", "single_incident_response")
+    
     if task_id not in TASKS:
         raise HTTPException(400, f"Unknown task_id: {task_id}.")
     
