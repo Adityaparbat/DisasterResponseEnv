@@ -33,12 +33,23 @@ LATEST_ACTIVE_TASK = "single_incident_response"
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    """Serves the dashboard UI or a basic health check."""
-    index_path = os.path.join(os.path.dirname(__file__), "..", "index.html")
-    if os.path.exists(index_path):
-        with open(index_path, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read(), status_code=200)
-    return HTMLResponse(content="<h1>Disaster Response Env</h1><p>Dashboard (index.html) not found.</p>", status_code=200)
+    """
+    Serves the dashboard UI. 
+    Location-Aware: Checks absolute, package, and relative paths.
+    """
+    possible_paths = [
+        "/app/index.html", # Hugging Face standard
+        os.path.join(os.path.dirname(__file__), "..", "index.html"), # Package standard
+        os.path.join(os.path.dirname(__file__), "index.html"), # Internal standard
+        "index.html", # Local CWD
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read(), status_code=200)
+                
+    return HTMLResponse(content="<h1>Disaster Response Env</h1><p>Dashboard (index.html) not found. Status: Running.</p>", status_code=200)
 
 @app.get("/favicon.ico")
 async def favicon():

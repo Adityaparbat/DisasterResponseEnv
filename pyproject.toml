@@ -26,3 +26,7 @@ openenv-server = "server.app:main"
 [tool.setuptools]
 packages = ["server"]
 py-modules = ["env", "models", "tasks"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["index.html"]
