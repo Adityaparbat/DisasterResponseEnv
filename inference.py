@@ -65,7 +65,7 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> No
 class HTTPEnvWrapper:
     def __init__(self, task_id: str):
         self.task_id = task_id
-        self.base_url = "http://localhost:7860"
+        self.base_url = "https://adityparbat-disaster-response-env.hf.space"
 
     async def reset(self) -> StepResult:
         url = f"{self.base_url}/reset"
