@@ -2,29 +2,23 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies (Caching layer)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install uv for fast dependency management
+RUN pip install --no-cache-dir uv
 
-# Copy core engine
-COPY models.py .
-COPY tasks.py .
-COPY env.py .
-COPY app.py .
-COPY index.html .
+# Copy manifest and lock files for optimized caching
+COPY pyproject.toml uv.lock ./
+RUN uv pip install --system --no-cache .
 
-# Copy evaluation & training logic (Submission-Ready)
-COPY inference.py .
-COPY gym_wrapper.py .
-# COPY train.py .
-# COPY evaluate_rl.py .
+# Copy core engine components (for server logic)
+COPY env.py models.py tasks.py index.html ./
 
-# Copy metadata
-COPY openenv.yaml .
-COPY README.md .
-COPY walkthrough.md .
+# Copy server logic (Required for v0.2.0 compliance)
+COPY server/ ./server/
+
+# Copy evaluation & documentation
+COPY inference.py gym_wrapper.py README.md walkthrough.md ./
 
 EXPOSE 7860
 
-# Run with uvicorn for production-grade stability
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
+# Use the standardized OpenEnv server entry point
+CMD ["openenv-server"]

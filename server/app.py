@@ -1,13 +1,17 @@
-# app.py
+# server/app.py
 """
 FastAPI server for RL/MDP Disaster Response Evaluation.
-Hardened for UI Dashboard: Handles JSON serialization and State Tracking.
-Bulletproof /reset: Handles empty/null POST bodies for automated checkers.
+Standardized OpenEnv Layout (v0.2.0 compliant).
 """
 
 import os
+import sys
 import json
 from typing import Optional, List, Dict, Any
+
+# Ensure project root is in path for imports from parent directory
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from fastapi import FastAPI, HTTPException, Response, Request
 from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.encoders import jsonable_encoder
@@ -20,7 +24,7 @@ from tasks import TASKS
 app = FastAPI(
     title="Disaster Response RL Environment",
     description="Gymnasium-standard LLM evaluation environment for emergency dispatch coordination.",
-    version="2.0.1"
+    version="2.0.2"
 )
 
 # Global store for active environments (task_id -> env instance)
@@ -30,7 +34,7 @@ LATEST_ACTIVE_TASK = "single_incident_response"
 @app.get("/", response_class=HTMLResponse)
 async def root():
     """Serves the dashboard UI or a basic health check."""
-    index_path = "index.html"
+    index_path = os.path.join(os.path.dirname(__file__), "..", "index.html")
     if os.path.exists(index_path):
         with open(index_path, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read(), status_code=200)
@@ -69,15 +73,12 @@ async def reset(request: Request, task_id: Optional[str] = None):
     """
     body_data = {}
     try:
-        # Only attempt to parse if there's actually a body
         if await request.body():
             body_data = await request.json()
     except Exception:
         body_data = {}
     
     if body_data is None: body_data = {}
-
-    # Priority: Body 'task_id' > Query 'task_id' > Default
     final_task_id = body_data.get("task_id") or task_id or "single_incident_response"
     
     if final_task_id not in TASKS:
@@ -130,7 +131,6 @@ async def step(request: StepRequest):
         if env is None:
             raise HTTPException(400, "Call /reset first.")
         
-        # Transform raw dict dispatches into Dispatch objects
         dispatches = [Dispatch(**d) for d in request.dispatches]
         action = Action(dispatches=dispatches, reasoning=request.reasoning)
         
@@ -145,7 +145,13 @@ async def step(request: StepRequest):
     except Exception as e:
         return JSONResponse(status_code=400, content={"error": str(e)})
 
-# Local dev server entry point
-if __name__ == "__main__":
+# ------------------------------------------------------------------
+# Entry point for the openenv-server CLI
+# ------------------------------------------------------------------
+def main():
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=7860)
+    # Important: Run from the package perspective so openenv-server script works
+    uvicorn.run("server.app:app", host="0.0.0.0", port=7860, reload=False)
+
+if __name__ == "__main__":
+    main()

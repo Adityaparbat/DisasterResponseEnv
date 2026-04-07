@@ -4,9 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "disaster_response_env"
-version = "2.0.1"
-description = "Hardened Disaster Response MDP Environment"
+version = "2.0.2"
+description = "Hardened Disaster Response MDP Environment (OpenEnv v0.2.0)"
 dependencies = [
+    "openenv-core>=0.2.0",
     "pydantic>=2.0",
     "openai>=1.0",
     "fastapi>=0.110.0",
@@ -19,5 +20,9 @@ dependencies = [
     "numpy"
 ]
 
+[project.scripts]
+openenv-server = "server.app:main"
+
 [tool.setuptools]
-packages = ["."]
+packages = ["server", "env", "models", "tasks"]
+py-modules = ["env", "models", "tasks"]
