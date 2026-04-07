@@ -24,5 +24,5 @@ dependencies = [
 openenv-server = "server.app:main"
 
 [tool.setuptools]
-packages = ["server", "env", "models", "tasks"]
+packages = ["server"]
 py-modules = ["env", "models", "tasks"]
