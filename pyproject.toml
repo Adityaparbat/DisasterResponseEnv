@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "disaster_response_env"
+version = "2.0.1"
+description = "Hardened Disaster Response MDP Environment"
+dependencies = [
+    "pydantic>=2.0",
+    "openai>=1.0",
+    "fastapi>=0.110.0",
+    "uvicorn>=0.29.0",
+    "pyyaml>=6.0",
+    "gymnasium",
+    "stable-baselines3",
+    "shimmy",
+    "tensorboard",
+    "numpy"
+]
+
+[tool.setuptools]
+packages = ["."]
