@@ -12,12 +12,15 @@ WORKDIR /app
 # Install uv for fast dependency management
 RUN pip install --no-cache-dir uv
 
-# Install requirements (Optimized Caching)
+# Copy package metadata AND core engine files (Required for build backend)
 COPY --chown=user requirements.txt pyproject.toml uv.lock ./
+COPY --chown=user env.py models.py tasks.py ./
+COPY --chown=user server/ ./server/
+
+# Build and install the environment package now that source files are present
 RUN uv pip install --system --no-cache .
 
-# Safely copy ONLY the files that were uploaded to the Space
-# Ensure proper ownership for the non-root user
+# Safely copy any remaining files (README, walkthrough, etc.)
 COPY --chown=user . .
 
 # Expose port 7860
