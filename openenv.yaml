@@ -1,0 +1,66 @@
+name: disaster-response-env
+version: "1.0.0"
+description: >
+  An OpenEnv-compliant RL environment where LLM agents act as emergency
+  dispatch controllers, coordinating resources across escalating multi-incident
+  scenarios with resource constraints, faulty units, and strategic reservation.
+author: Aditya
+tags:
+  - emergency-dispatch
+  - multi-agent
+  - resource-allocation
+  - constraint-reasoning
+  - openenv
+
+tasks:
+  - id: single_incident_response
+    difficulty: easy
+    description: Single critical fire — dispatch correct unit types with minimal waste.
+
+  - id: multi_incident_triage
+    difficulty: medium
+    description: >
+      Three simultaneous incidents with coded unit names and one unavailable unit.
+      Agent must read manifest, respect constraints, and triage by severity.
+
+  - id: dynamic_escalation
+    difficulty: hard
+    description: >
+      Gas leak and psychiatric crisis with a faulty fire truck and unavailable hazmat unit
+      listed in the dispatch log. Agent must avoid forbidden units and reserve
+      fire suppression capacity for potential escalation.
+
+observation_space:
+  task_id: string
+  scenario: string
+  resources_manifest: object
+  available_resources: list
+  active_incidents: list
+  constraints: list
+  step: integer
+  max_steps: integer
+  previous_actions: list
+
+action_space:
+  dispatches: list
+  reasoning: string
+  priority_order: list (optional)
+  reserved_units: list (optional)
+
+reward:
+  range: [0.0, 1.0]
+  components:
+    coverage_score:   {weight: 0.35, description: Correct unit types dispatched to incidents}
+    priority_score:   {weight: 0.25, description: Critical incidents handled before moderate/low}
+    efficiency_score: {weight: 0.20, description: No duplicates, reserved capacity where required}
+    reasoning_score:  {weight: 0.10, description: Clear explanation of triage and constraint adherence}
+    constraint_score: {weight: 0.10, description: Forbidden/unavailable units not dispatched}
+
+baseline:
+  model: Qwen/Qwen2.5-72B-Instruct
+  endpoint: https://router.huggingface.co/v1
+  expected_scores:
+    single_incident_response: ~0.82
+    multi_incident_triage: ~0.65
+    dynamic_escalation: ~0.48
+  expected_average: ~0.65

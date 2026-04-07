@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+
+# RL artifacts
+logs/
+models/*.zip
+models/ppo_disaster_*
+
+# Sensitivity
+.env
+HF_TOKEN
+
+# OS files
+.DS_Store
+Thumbs.db
