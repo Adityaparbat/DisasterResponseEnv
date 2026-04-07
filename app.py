@@ -62,29 +62,32 @@ class StepRequest(BaseModel):
 # Endpoints
 # ------------------------------------------------------------------
 @app.post("/reset")
-async def reset(request: Request):
+async def reset(request: Request, task_id: Optional[str] = None):
     """
     Resets the environment to its initial state.
-    Hardened to accept empty or malformed POST bodies.
+    Hyper-Resilient: Supports task_id via Query Param OR JSON Body.
     """
+    body_data = {}
     try:
-        # Checkbox: Bulletproof JSON parsing
-        data = await request.json()
+        # Only attempt to parse if there's actually a body
+        if await request.body():
+            body_data = await request.json()
     except Exception:
-        data = {}
+        body_data = {}
     
-    if data is None: data = {}
+    if body_data is None: body_data = {}
 
-    task_id = data.get("task_id", "single_incident_response")
+    # Priority: Body 'task_id' > Query 'task_id' > Default
+    final_task_id = body_data.get("task_id") or task_id or "single_incident_response"
     
-    if task_id not in TASKS:
-        raise HTTPException(400, f"Unknown task_id: {task_id}.")
+    if final_task_id not in TASKS:
+        raise HTTPException(400, f"Unknown task_id: {final_task_id}.")
     
     global LATEST_ACTIVE_TASK
-    LATEST_ACTIVE_TASK = task_id
+    LATEST_ACTIVE_TASK = final_task_id
     
-    env = DisasterResponseEnv(task_id=task_id)
-    _envs[task_id] = env
+    env = DisasterResponseEnv(task_id=final_task_id)
+    _envs[final_task_id] = env
     
     result = await env.reset()
     return JSONResponse(status_code=200, content=jsonable_encoder({
