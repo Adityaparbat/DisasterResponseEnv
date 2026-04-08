@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Disaster Response RL — Evaluation Dashboard</title>
+  <title>Disaster Response RL — Command Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link
@@ -27,26 +27,28 @@
 
     body {
       font-family: 'IBM Plex Sans', sans-serif;
-      background: #0a0c10;
-      color: #c9d1d9;
+      background: #0d0d0d;
+      /* Deeper black for emergency vibe */
+      color: #e5e5e5;
       font-size: 13px;
     }
 
     :root {
       --nav-h: 50px;
       --sidebar-w: 272px;
-      --red: #f85149;
-      --amber: #d29922;
-      --green: #3fb950;
-      --blue: #58a6ff;
-      --purple: #bc8cff;
-      --border: rgba(255, 255, 255, 0.08);
-      --surface: #161b22;
-      --surface2: #1c2128;
-      --surface3: #21262d;
-      --text-primary: #e6edf3;
-      --text-secondary: #8b949e;
-      --text-muted: #484f58;
+      --red: #f43f5e;
+      --amber: #f59e0b;
+      --green: #10b981;
+      --accent: #f97316;
+      /* Replaced the blue with Emergency Orange */
+      --purple: #8b5cf6;
+      --border: rgba(255, 255, 255, 0.1);
+      --surface: #171717;
+      --surface2: #262626;
+      --surface3: #404040;
+      --text-primary: #f5f5f5;
+      --text-secondary: #a3a3a3;
+      --text-muted: #737373;
     }
 
     /* ── SCROLLBAR ── */
@@ -59,12 +61,12 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.15);
       border-radius: 99px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.3);
     }
 
     /* ── NAV ── */
@@ -89,7 +91,7 @@
       left: 0;
       right: 0;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(88, 166, 255, 0.3), transparent);
+      background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.4), transparent);
       pointer-events: none;
     }
 
@@ -103,8 +105,8 @@
       width: 30px;
       height: 30px;
       border-radius: 6px;
-      background: rgba(248, 81, 73, 0.15);
-      border: 1px solid rgba(248, 81, 73, 0.3);
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.3);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -119,7 +121,6 @@
       font-size: 13px;
       font-weight: 600;
       color: var(--text-primary);
-      letter-spacing: -.01em;
     }
 
     #nav-sub {
@@ -145,25 +146,24 @@
       font-weight: 500;
       font-family: 'IBM Plex Mono', monospace;
       border: 1px solid;
-      letter-spacing: .02em;
     }
 
     .status-chip.waiting {
-      background: rgba(210, 153, 34, 0.1);
+      background: rgba(245, 158, 11, 0.1);
       color: var(--amber);
-      border-color: rgba(210, 153, 34, 0.25);
+      border-color: rgba(245, 158, 11, 0.25);
     }
 
     .status-chip.running {
-      background: rgba(88, 166, 255, 0.1);
-      color: var(--blue);
-      border-color: rgba(88, 166, 255, 0.25);
+      background: rgba(249, 115, 22, 0.1);
+      color: var(--accent);
+      border-color: rgba(249, 115, 22, 0.25);
     }
 
     .status-chip.done {
-      background: rgba(63, 185, 80, 0.1);
+      background: rgba(16, 185, 129, 0.1);
       color: var(--green);
-      border-color: rgba(63, 185, 80, 0.25);
+      border-color: rgba(16, 185, 129, 0.25);
     }
 
     .dot {
@@ -198,11 +198,11 @@
     #step-badge {
       font-family: 'IBM Plex Mono', monospace;
       font-size: 11px;
-      color: var(--text-secondary);
+      color: var(--accent);
       padding: 4px 10px;
       border-radius: 6px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
+      background: rgba(249, 115, 22, 0.08);
+      border: 1px solid rgba(249, 115, 22, 0.2);
     }
 
     #taskSelect {
@@ -219,7 +219,7 @@
     }
 
     #taskSelect:hover {
-      border-color: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
     #autosync-wrap {
@@ -232,19 +232,19 @@
     }
 
     #autoSync {
-      accent-color: var(--blue);
+      accent-color: var(--accent);
     }
 
     /* ── ACTIVITY BANNER ── */
     #activityBanner {
       display: none;
       flex-shrink: 0;
-      background: rgba(210, 153, 34, 0.08);
-      border-bottom: 1px solid rgba(210, 153, 34, 0.2);
+      background: rgba(244, 63, 94, 0.08);
+      border-bottom: 1px solid rgba(244, 63, 94, 0.2);
       padding: 6px 16px;
       font-size: 11px;
       font-weight: 500;
-      color: var(--amber);
+      color: var(--red);
       align-items: center;
       justify-content: space-between;
       animation: slideDown .2s ease;
@@ -264,15 +264,15 @@
       font-size: 11px;
       padding: 2px 10px;
       border-radius: 4px;
-      border: 1px solid rgba(210, 153, 34, 0.3);
+      border: 1px solid rgba(244, 63, 94, 0.3);
       background: transparent;
-      color: var(--amber);
+      color: var(--red);
       cursor: pointer;
       transition: background .15s;
     }
 
     #activityBanner button:hover {
-      background: rgba(210, 153, 34, 0.1);
+      background: rgba(244, 63, 94, 0.1);
     }
 
     /* ── MAIN GRID ── */
@@ -283,7 +283,6 @@
       height: calc(100vh - var(--nav-h));
     }
 
-    /* ── PANELS ── */
     .panel {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -349,7 +348,6 @@
       gap: 7px;
       background: var(--surface2);
       transition: border-color .15s, background .15s;
-      cursor: default;
     }
 
     .inc-card:hover {
@@ -390,32 +388,20 @@
 
     .sev-critical .sev-pill {
       color: var(--red);
-      background: rgba(248, 81, 73, 0.1);
-      border-color: rgba(248, 81, 73, 0.3);
+      background: rgba(244, 63, 94, 0.1);
+      border-color: rgba(244, 63, 94, 0.3);
     }
 
     .sev-moderate .sev-pill {
       color: var(--amber);
-      background: rgba(210, 153, 34, 0.1);
-      border-color: rgba(210, 153, 34, 0.3);
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.3);
     }
 
     .sev-low .sev-pill {
       color: var(--green);
-      background: rgba(63, 185, 80, 0.1);
-      border-color: rgba(63, 185, 80, 0.3);
-    }
-
-    .sev-conditional .sev-pill {
-      color: var(--purple);
-      background: rgba(188, 140, 255, 0.1);
-      border-color: rgba(188, 140, 255, 0.3);
-    }
-
-    .sev-unknown .sev-pill {
-      color: var(--text-muted);
-      background: var(--surface3);
-      border-color: var(--border);
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
     }
 
     .inc-id {
@@ -448,9 +434,9 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: rgba(88, 166, 255, 0.08);
-      color: var(--blue);
-      border: 1px solid rgba(88, 166, 255, 0.2);
+      background: rgba(249, 115, 22, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(249, 115, 22, 0.2);
       font-size: 10px;
       font-weight: 500;
       padding: 2px 7px;
@@ -460,7 +446,7 @@
     .awaiting {
       font-size: 10px;
       color: var(--text-muted);
-      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border: 1px dashed rgba(255, 255, 255, 0.2);
       border-radius: 4px;
       padding: 2px 8px;
       font-style: italic;
@@ -475,7 +461,7 @@
       flex-wrap: wrap;
       gap: 5px;
       align-items: center;
-      background: rgba(210, 153, 34, 0.04);
+      background: rgba(245, 158, 11, 0.05);
     }
 
     #constraints-label {
@@ -485,16 +471,15 @@
       letter-spacing: .1em;
       font-weight: 600;
       font-family: 'IBM Plex Mono', monospace;
-      flex-shrink: 0;
     }
 
     .constraint-tag {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: rgba(210, 153, 34, 0.08);
+      background: rgba(245, 158, 11, 0.1);
       color: var(--amber);
-      border: 1px solid rgba(210, 153, 34, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.3);
       font-size: 10px;
       font-weight: 500;
       padding: 2px 8px;
@@ -514,7 +499,6 @@
       overflow: hidden;
     }
 
-    /* Score */
     #score-section {
       flex-shrink: 0;
       padding: 14px;
@@ -563,7 +547,7 @@
 
     .bar-track {
       height: 4px;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 99px;
       overflow: hidden;
     }
@@ -577,8 +561,8 @@
     #grader-remark {
       margin-top: 10px;
       padding: 8px 10px;
-      background: rgba(88, 166, 255, 0.05);
-      border-left: 2px solid rgba(88, 166, 255, 0.3);
+      background: rgba(249, 115, 22, 0.05);
+      border-left: 2px solid rgba(249, 115, 22, 0.4);
       border-radius: 0 6px 6px 0;
       font-size: 11px;
       color: var(--text-secondary);
@@ -615,7 +599,7 @@
     }
 
     .log-item:hover {
-      border-color: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
     .log-item-hd {
@@ -672,7 +656,6 @@
       min-height: 0;
     }
 
-    /* ── EMPTY ── */
     .empty {
       text-align: center;
       padding: 24px 16px;
@@ -689,11 +672,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: repeating-linear-gradient(0deg,
-          transparent,
-          transparent 2px,
-          rgba(0, 0, 0, 0.03) 2px,
-          rgba(0, 0, 0, 0.03) 4px);
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.05) 2px, rgba(0, 0, 0, 0.05) 4px);
       pointer-events: none;
       z-index: 9999;
     }
@@ -702,13 +681,12 @@
 
 <body>
 
-  <!-- NAV -->
   <div id="nav">
     <div id="nav-left">
       <div id="nav-logo">DR</div>
       <div>
         <div id="nav-title">Disaster Response RL</div>
-        <div id="nav-sub">Multi-agent evaluation platform</div>
+        <div id="nav-sub">Emergency Command Center</div>
       </div>
       <div class="nav-sep"></div>
       <div id="statusChip" class="status-chip waiting">
@@ -717,24 +695,19 @@
     </div>
     <div id="nav-right">
       <label id="autosync-wrap">
-        <input type="checkbox" id="autoSync" checked>
-        Auto-sync
+        <input type="checkbox" id="autoSync" checked> Auto-sync
       </label>
       <div id="step-badge">step —</div>
       <select id="taskSelect"></select>
     </div>
   </div>
 
-  <!-- ACTIVITY BANNER -->
   <div id="activityBanner" class="flex items-center justify-between">
     <span id="activityMsg">Background activity detected on another task</span>
     <button onclick="switchToActive()">Switch view</button>
   </div>
 
-  <!-- MAIN -->
   <div id="main">
-
-    <!-- DISPATCH PANEL -->
     <div class="panel" id="dispatch-panel">
       <div class="panel-hd">
         <span>Live dispatch matrix</span>
@@ -749,10 +722,7 @@
       </div>
     </div>
 
-    <!-- SIDEBAR -->
     <div id="sidebar">
-
-      <!-- Score -->
       <div id="score-section">
         <div id="score-label">Mission score</div>
         <div id="total-score-num">—</div>
@@ -760,66 +730,57 @@
           <div class="bar-row">
             <div class="bar-lbl"><span>Coverage</span><span class="bar-val" id="sc-cov">—</span></div>
             <div class="bar-track">
-              <div class="bar-fill" id="bar-cov" style="background:#58a6ff;width:0%"></div>
+              <div class="bar-fill" id="bar-cov" style="background:var(--accent);width:0%"></div>
             </div>
           </div>
           <div class="bar-row">
             <div class="bar-lbl"><span>Efficiency</span><span class="bar-val" id="sc-eff">—</span></div>
             <div class="bar-track">
-              <div class="bar-fill" id="bar-eff" style="background:#3fb950;width:0%"></div>
+              <div class="bar-fill" id="bar-eff" style="background:var(--amber);width:0%"></div>
             </div>
           </div>
           <div class="bar-row">
             <div class="bar-lbl"><span>Priority</span><span class="bar-val" id="sc-pri">—</span></div>
             <div class="bar-track">
-              <div class="bar-fill" id="bar-pri" style="background:#bc8cff;width:0%"></div>
+              <div class="bar-fill" id="bar-pri" style="background:var(--red);width:0%"></div>
             </div>
           </div>
           <div class="bar-row">
             <div class="bar-lbl"><span>Protocol</span><span class="bar-val" id="sc-con">—</span></div>
             <div class="bar-track">
-              <div class="bar-fill" id="bar-con" style="background:#d29922;width:0%"></div>
+              <div class="bar-fill" id="bar-con" style="background:var(--green);width:0%"></div>
             </div>
           </div>
           <div class="bar-row">
             <div class="bar-lbl"><span>Reasoning</span><span class="bar-val" id="sc-rea">—</span></div>
             <div class="bar-track">
-              <div class="bar-fill" id="bar-rea" style="background:#f0883e;width:0%"></div>
+              <div class="bar-fill" id="bar-rea" style="background:var(--purple);width:0%"></div>
             </div>
           </div>
         </div>
         <div id="grader-remark">Awaiting evaluation...</div>
       </div>
-
-      <!-- Action Log -->
       <div id="log-section" class="panel">
-        <div class="panel-hd">
-          <span>Action log</span>
-          <span class="panel-hd-meta">latest first</span>
-        </div>
+        <div class="panel-hd"><span>Action log</span><span class="panel-hd-meta">latest first</span></div>
         <div id="log-scroll">
           <div class="empty">Simulation inactive...</div>
         </div>
       </div>
-
     </div>
 
-    <!-- CHART -->
     <div class="panel" id="chart-panel">
-      <div class="panel-hd">
-        <span>Reward trajectory</span>
-        <span id="chartInfo" class="panel-hd-meta">No data yet</span>
+      <div class="panel-hd"><span>Reward trajectory</span><span id="chartInfo" class="panel-hd-meta">No data yet</span>
       </div>
-      <div id="chart-wrap">
-        <canvas id="rewardChart"></canvas>
-      </div>
+      <div id="chart-wrap"><canvas id="rewardChart"></canvas></div>
     </div>
-
   </div>
 
   <script>
     let currentTaskId = 'single_incident_response';
     let rewardChart = null;
+
+    // FIX 1: Isolate the board memory strictly by task!
+    window.gridCache = window.gridCache || {};
 
     const UNIT_ICONS = {
       fire: '🚒', police: '🚓', ambulance: '🚑', med: '🚑',
@@ -855,7 +816,13 @@
           opt.textContent = `${label}${diff ? ' (' + diff + ')' : ''}`;
           sel.appendChild(opt);
         });
-        sel.addEventListener('change', e => { currentTaskId = e.target.value; fetchDashboard(); });
+
+        // FIX 2: Stop auto-sync snapping when the user manually uses the dropdown!
+        sel.addEventListener('change', e => {
+          currentTaskId = e.target.value;
+          document.getElementById('autoSync').checked = false;
+          fetchDashboard();
+        });
       } catch (e) { }
 
       const ctx = document.getElementById('rewardChart').getContext('2d');
@@ -866,47 +833,31 @@
           datasets: [{
             label: 'Step Reward',
             data: [],
-            borderColor: '#58a6ff',
-            backgroundColor: 'rgba(88,166,255,0.06)',
-            borderWidth: 1.5,
+            borderColor: '#f97316', // Orange Theme!
+            backgroundColor: 'rgba(249,115,22,0.08)',
+            borderWidth: 2,
             fill: true,
             tension: 0.35,
-            pointBackgroundColor: '#0a0c10',
-            pointBorderColor: '#58a6ff',
+            pointBackgroundColor: '#0d0d0d',
+            pointBorderColor: '#f97316',
             pointBorderWidth: 1.5,
             pointRadius: 4,
             pointHoverRadius: 6
           }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
+          responsive: true, maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: '#161b22',
-              borderColor: 'rgba(255,255,255,0.1)',
-              borderWidth: 1,
-              titleColor: '#58a6ff',
-              bodyColor: '#c9d1d9',
-              padding: 10,
-              cornerRadius: 6,
-              callbacks: {
-                title: i => `Turn ${i[0].label}`,
-                label: i => ` Score: ${i.raw.toFixed(3)}`
-              }
+              backgroundColor: '#171717', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+              titleColor: '#f97316', bodyColor: '#e5e5e5', padding: 10, cornerRadius: 6,
+              callbacks: { title: i => `Turn ${i[0].label}`, label: i => ` Score: ${i.raw.toFixed(3)}` }
             }
           },
           scales: {
-            y: {
-              min: 0, max: 1,
-              grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-              ticks: { color: '#484f58', font: { family: 'IBM Plex Mono', size: 10 }, stepSize: 0.25 }
-            },
-            x: {
-              grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
-              ticks: { color: '#484f58', font: { family: 'IBM Plex Mono', size: 10 } }
-            }
+            y: { min: 0, max: 1, grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }, ticks: { color: '#737373', font: { family: 'IBM Plex Mono', size: 10 }, stepSize: 0.25 } },
+            x: { grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false }, ticks: { color: '#737373', font: { family: 'IBM Plex Mono', size: 10 } } }
           }
         }
       });
@@ -933,7 +884,11 @@
 
     function switchToActive(tid) {
       const target = tid || window.latestActiveTaskId;
-      if (target) { currentTaskId = target; document.getElementById('taskSelect').value = currentTaskId; fetchDashboard(); }
+      if (target) {
+        currentTaskId = target;
+        document.getElementById('taskSelect').value = currentTaskId;
+        fetchDashboard();
+      }
     }
 
     async function fetchDashboard() {
@@ -945,51 +900,41 @@
 
         const done = data.terminated || data.truncated;
         setStatus(done ? 'done' : 'running', done ? 'Mission complete' : 'Agent running');
-        document.getElementById('step-badge').textContent =
-          `step ${data.observation.step} / ${data.observation.max_steps}`;
+
+        // This is what updates your "step" badge in real-time
+        document.getElementById('step-badge').textContent = `step ${data.observation.step} / ${data.observation.max_steps}`;
 
         const histRewards = data.history.map(h => h.reward);
-        document.getElementById('chartInfo').textContent =
-          `${histRewards.length} reward point${histRewards.length !== 1 ? 's' : ''}`;
+        document.getElementById('chartInfo').textContent = `${histRewards.length} reward point${histRewards.length !== 1 ? 's' : ''}`;
         rewardChart.data.labels = histRewards.map((_, i) => `${i + 1}`);
         rewardChart.data.datasets[0].data = histRewards;
         rewardChart.update('none');
 
         const base = +data.reward;
         document.getElementById('total-score-num').textContent = base.toFixed(2);
-        document.getElementById('grader-remark').textContent =
-          data.terminated ? 'Success — board cleared.' :
-            (data.truncated ? 'Time up — incomplete.' : 'Active mission in progress.');
+        document.getElementById('grader-remark').textContent = data.terminated ? 'Success — board cleared.' : (data.truncated ? 'Time up — incomplete.' : 'Active mission in progress.');
 
         const updateBar = (id, mul) => {
           const val = Math.min(100, Math.max(0, (base * mul) * 100)).toFixed(0);
           document.getElementById(`sc-${id}`).textContent = `${val}%`;
           document.getElementById(`bar-${id}`).style.width = `${val}%`;
         };
-        updateBar('cov', 1.05);
-        updateBar('eff', 0.95);
-        updateBar('pri', 1.10);
-        updateBar('con', done ? 1.0 : 0.85);
-        updateBar('rea', 1.0);
+        updateBar('cov', 1.05); updateBar('eff', 0.95); updateBar('pri', 1.10); updateBar('con', done ? 1.0 : 0.85); updateBar('rea', 1.0);
 
         if (data.observation) {
           const obs = data.observation;
 
-          // Constraints
           const ctags = document.getElementById('constraint-tags');
           ctags.innerHTML = '';
           if (obs.constraints && obs.constraints.length) {
             obs.constraints.forEach(c => {
               const chip = document.createElement('span');
-              chip.className = 'constraint-tag';
-              chip.textContent = c;
-              ctags.appendChild(chip);
+              chip.className = 'constraint-tag'; chip.textContent = c; ctags.appendChild(chip);
             });
           } else {
             ctags.innerHTML = '<span style="font-size:10px;color:var(--text-muted);font-style:italic;">None active</span>';
           }
 
-          // Dispatch map from history
           const dispatchMap = {};
           (obs.previous_actions || []).forEach(paStr => {
             try {
@@ -1001,10 +946,8 @@
             } catch (e) { }
           });
 
-          // Incident grid
           const grid = document.getElementById('incident-grid');
-          document.getElementById('matrixMeta').textContent =
-            `${obs.active_incidents.length} active incident${obs.active_incidents.length !== 1 ? 's' : ''}`;
+          document.getElementById('matrixMeta').textContent = `${obs.active_incidents.length} active incident${obs.active_incidents.length !== 1 ? 's' : ''}`;
 
           if (obs.active_incidents && obs.active_incidents.length > 0) {
             grid.innerHTML = '';
@@ -1027,16 +970,17 @@
                 <div class="unit-row">${unitHTML}</div>`;
               grid.appendChild(card);
             });
-            window.lastKnownGridHTML = grid.innerHTML;
-          } else if (done && window.lastKnownGridHTML) {
-            grid.innerHTML = window.lastKnownGridHTML;
+            // FIX 3: Save to the cache *keyed by the task ID*
+            window.gridCache[currentTaskId] = grid.innerHTML;
+          } else if (done && window.gridCache[currentTaskId]) {
+            // Restore from the cache perfectly when navigating back!
+            grid.innerHTML = window.gridCache[currentTaskId];
             grid.style.opacity = '0.45';
             document.getElementById('matrixMeta').textContent = 'All incidents resolved';
           } else {
             grid.innerHTML = '';
           }
 
-          // Action log
           const logEl = document.getElementById('log-scroll');
           logEl.innerHTML = '';
           const actions = [...(obs.previous_actions || [])].reverse();
@@ -1047,7 +991,7 @@
               try {
                 const pa = JSON.parse(paStr);
                 const r = +pa.reward;
-                const rColor = r >= 0.8 ? '#3fb950' : r >= 0.5 ? '#d29922' : '#f85149';
+                const rColor = r >= 0.8 ? 'var(--green)' : r >= 0.5 ? 'var(--amber)' : 'var(--red)';
                 const dispHtml = (pa.dispatches || []).length
                   ? (pa.dispatches || []).map(d =>
                     `<span class="unit-tag" style="font-size:10px;">${getIcon(d.unit)} ${d.unit.replace(/^unit_/, '')} → ${d.incident_id}</span>`
