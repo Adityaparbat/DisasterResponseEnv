@@ -57,11 +57,11 @@ To mathematically prove the validity of our MDP state transitions and reward sha
 pip install -r requirements.txt
 
 # 2. Start the Environment Server
-python app.py --port 7860
+python server/app.py --port 7860
 
 # 3. Run Inference (Submission-Compliant Format)
 export HF_TOKEN=your_token
-python inference.py --model Qwen/Qwen2.5-72B-Instruct
+python inference.py 
 ```
 
 ## 📂 File Structure
