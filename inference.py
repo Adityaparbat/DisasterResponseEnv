@@ -12,6 +12,7 @@ import os
 import re
 import time
 import textwrap
+import math
 import urllib.request
 from typing import List, Optional, Any
 
@@ -240,8 +241,12 @@ async def run_task(client: OpenAI, task_id: str):
             success = result.terminated
             break
             
-    # Checkbox 5: Log END
-    log_end(success=success, steps=steps_taken, score=total_reward, rewards=rewards)
+    # Checkbox 5: Logistic Normalization for Grader Compliance (0.01 - 0.99)
+    # This maps our unbounded MDP return into the strictly bounded range required by the grader.
+    sigmoid = 1 / (1 + math.exp(-total_reward))
+    final_score = 0.01 + (0.98 * sigmoid)
+    
+    log_end(success=success, steps=steps_taken, score=final_score, rewards=rewards)
     return {"task_id": task_id, "reward": total_reward, "success": success}
 
 async def main():
