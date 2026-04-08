@@ -907,9 +907,14 @@
         // This is what updates your "step" badge in real-time
         document.getElementById('step-badge').textContent = `step ${data.observation.step} / ${data.observation.max_steps}`;
 
-        const histRewards = data.history.map(h => h.reward);
-        document.getElementById('chartInfo').textContent = `${histRewards.length} reward point${histRewards.length !== 1 ? 's' : ''}`;
-        rewardChart.data.labels = histRewards.map((_, i) => `${i + 1}`);
+        // THE FIX: Inject a Turn 0 baseline so 1-step wins still draw a trajectory line!
+        const histRewards = [0.0, ...data.history.map(h => h.reward)];
+
+        const actualSteps = histRewards.length - 1;
+        document.getElementById('chartInfo').textContent = `${actualSteps} agent step${actualSteps !== 1 ? 's' : ''}`;
+
+        // Label the X-axis starting at 'Start', then 1, 2, 3...
+        rewardChart.data.labels = histRewards.map((_, i) => i === 0 ? 'Start' : `${i}`);
         rewardChart.data.datasets[0].data = histRewards;
         rewardChart.update('none');
 
