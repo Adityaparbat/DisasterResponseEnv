@@ -808,16 +808,19 @@
         const tr = await fetch('/tasks');
         const tasks = await tr.json();
         const sel = document.getElementById('taskSelect');
-        Object.keys(tasks).forEach(t => {
+
+        // THE FIX: Check if Python sent a List instead of a Dictionary
+        const taskList = Array.isArray(tasks) ? tasks : Object.keys(tasks);
+
+        taskList.forEach(t => {
           const opt = document.createElement('option');
-          opt.value = t;
-          const diff = tasks[t].difficulty || '';
+          opt.value = t; // Now this will correctly be "single_incident_response"
           const label = t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-          opt.textContent = `${label}${diff ? ' (' + diff + ')' : ''}`;
+          opt.textContent = label;
           sel.appendChild(opt);
         });
 
-        // FIX 2: Stop auto-sync snapping when the user manually uses the dropdown!
+        // Stop auto-sync snapping when the user manually uses the dropdown
         sel.addEventListener('change', e => {
           currentTaskId = e.target.value;
           document.getElementById('autoSync').checked = false;
