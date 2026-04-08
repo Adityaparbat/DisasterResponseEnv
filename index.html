@@ -7,461 +7,811 @@
   <title>Disaster Response RL — Evaluation Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
     rel="stylesheet">
   <style>
     *,
     *::before,
     *::after {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     html,
     body {
       height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f1f5f9;
-      color: #0f172a;
-      overflow-x: hidden;
-    }
-
-    /* ── Top navigation bar ─────────────────────────── */
-    #topbar {
-      background: #0f2447;
-      border-bottom: 3px solid #1d4ed8;
-    }
-
-    /* ── Cards ──────────────────────────────────────── */
-    .card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
-    }
-
-    .card-header {
-      padding: 10px 16px;
-      border-bottom: 1px solid #e2e8f0;
-      background: #f8fafc;
-      border-radius: 8px 8px 0 0;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #475569;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    /* ── Incident Zone Cards ────────────────────────── */
-    .inc-card {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-left: 4px solid #94a3b8;
-      border-radius: 6px;
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transition: box-shadow 0.2s;
-    }
-
-    .inc-card:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .inc-card.sev-critical {
-      border-left-color: #dc2626;
-    }
-
-    .inc-card.sev-moderate {
-      border-left-color: #f59e0b;
-    }
-
-    .inc-card.sev-low {
-      border-left-color: #22c55e;
-    }
-
-    .inc-card.sev-conditional {
-      border-left-color: #8b5cf6;
-    }
-
-    .inc-card.sev-unknown {
-      border-left-color: #64748b;
-    }
-
-    .severity-badge {
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 2px 7px;
-      border-radius: 4px;
-      border: 1px solid currentColor;
-    }
-
-    .sev-critical .severity-badge {
-      color: #dc2626;
-      background: #fef2f2;
-    }
-
-    .sev-moderate .severity-badge {
-      color: #d97706;
-      background: #fffbeb;
-    }
-
-    .sev-low .severity-badge {
-      color: #16a34a;
-      background: #f0fdf4;
-    }
-
-    .sev-conditional .severity-badge {
-      color: #7c3aed;
-      background: #f5f3ff;
-    }
-
-    .sev-unknown .severity-badge {
-      color: #475569;
-      background: #f1f5f9;
-    }
-
-    /* ── Unit badges ────────────────────────────────── */
-    .unit-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #1d4ed8;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 9px;
-      border-radius: 4px;
-    }
-
-    .awaiting {
-      font-size: 11px;
-      color: #94a3b8;
-      font-style: italic;
-      border: 1px dashed #cbd5e1;
-      border-radius: 4px;
-      padding: 4px 10px;
-      display: inline-block;
-    }
-
-    /* ── Score bars ─────────────────────────────────── */
-    .score-bar-track {
-      background: #e2e8f0;
-      border-radius: 4px;
-      height: 7px;
       overflow: hidden;
     }
 
-    .score-bar-fill {
-      height: 100%;
-      border-radius: 4px;
-      transition: width 0.7s ease;
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: #0a0c10;
+      color: #c9d1d9;
+      font-size: 13px;
     }
 
-    /* ── Log rows ───────────────────────────────────── */
-    .log-row {
-      border-left: 3px solid #e2e8f0;
-      padding: 8px 12px;
-      background: #f8fafc;
-      border-radius: 0 6px 6px 0;
-      font-size: 12px;
-      transition: border-color 0.2s;
+    :root {
+      --nav-h: 50px;
+      --sidebar-w: 272px;
+      --red: #f85149;
+      --amber: #d29922;
+      --green: #3fb950;
+      --blue: #58a6ff;
+      --purple: #bc8cff;
+      --border: rgba(255, 255, 255, 0.08);
+      --surface: #161b22;
+      --surface2: #1c2128;
+      --surface3: #21262d;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #484f58;
     }
 
-    .log-row:hover {
-      border-left-color: #1d4ed8;
-      background: #eff6ff;
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar {
+      width: 4px;
     }
 
-    /* ── Status pill ────────────────────────────────── */
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 5px 14px;
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 99px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
     }
 
-    .status-done {
-      background: #dcfce7;
-      color: #14532d;
-      border: 1px solid #86efac;
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
 
-    #activeTaskBar {
-      display: none;
-      background: #fdf2f8;
-      border-bottom: 1px solid #f9a8d4;
-      padding: 8px 16px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #be185d;
+    /* ── NAV ── */
+    #nav {
+      height: var(--nav-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
       align-items: center;
       justify-content: space-between;
-      animation: slideDown 0.3s ease-out;
-      position: sticky;
-      top: 0;
-      z-index: 50;
+      padding: 0 16px;
+      gap: 12px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    #nav::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(88, 166, 255, 0.3), transparent);
+      pointer-events: none;
+    }
+
+    #nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #nav-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      background: rgba(248, 81, 73, 0.15);
+      border: 1px solid rgba(248, 81, 73, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--red);
+      letter-spacing: -.5px;
+    }
+
+    #nav-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -.01em;
+    }
+
+    #nav-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .nav-sep {
+      width: 1px;
+      height: 22px;
+      background: var(--border);
+    }
+
+    /* Status chip */
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      font-family: 'IBM Plex Mono', monospace;
+      border: 1px solid;
+      letter-spacing: .02em;
+    }
+
+    .status-chip.waiting {
+      background: rgba(210, 153, 34, 0.1);
+      color: var(--amber);
+      border-color: rgba(210, 153, 34, 0.25);
+    }
+
+    .status-chip.running {
+      background: rgba(88, 166, 255, 0.1);
+      color: var(--blue);
+      border-color: rgba(88, 166, 255, 0.25);
+    }
+
+    .status-chip.done {
+      background: rgba(63, 185, 80, 0.1);
+      color: var(--green);
+      border-color: rgba(63, 185, 80, 0.25);
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .dot.pulse {
+      animation: blink 1.4s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .25
+      }
+    }
+
+    #nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #step-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text-secondary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+
+    #taskSelect {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text-primary);
+      max-width: 200px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    #taskSelect:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    #autosync-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    #autoSync {
+      accent-color: var(--blue);
+    }
+
+    /* ── ACTIVITY BANNER ── */
+    #activityBanner {
+      display: none;
+      flex-shrink: 0;
+      background: rgba(210, 153, 34, 0.08);
+      border-bottom: 1px solid rgba(210, 153, 34, 0.2);
+      padding: 6px 16px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--amber);
+      align-items: center;
+      justify-content: space-between;
+      animation: slideDown .2s ease;
     }
 
     @keyframes slideDown {
       from {
-        transform: translateY(-100%);
+        transform: translateY(-100%)
       }
 
       to {
-        transform: translateY(0);
+        transform: translateY(0)
       }
     }
 
-    .pulse-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
+    #activityBanner button {
+      font-size: 11px;
+      padding: 2px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(210, 153, 34, 0.3);
+      background: transparent;
+      color: var(--amber);
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    #activityBanner button:hover {
+      background: rgba(210, 153, 34, 0.1);
+    }
+
+    /* ── MAIN GRID ── */
+    #main {
+      display: grid;
+      grid-template-columns: 1fr var(--sidebar-w);
+      grid-template-rows: 1fr 190px;
+      height: calc(100vh - var(--nav-h));
+    }
+
+    /* ── PANELS ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-hd {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .panel-hd-meta {
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* ── INCIDENT CARDS ── */
+    #dispatch-panel {
+      grid-column: 1;
+      grid-row: 1;
+      border-top: none;
+      border-left: none;
+      border-bottom: none;
+    }
+
+    #incident-grid {
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+      gap: 8px;
+      align-content: start;
+    }
+
+    .inc-card {
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      border-radius: 0 8px 8px 0;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      background: var(--surface2);
+      transition: border-color .15s, background .15s;
+      cursor: default;
+    }
+
+    .inc-card:hover {
+      background: var(--surface3);
+    }
+
+    .inc-card.sev-critical {
+      border-left-color: var(--red);
+    }
+
+    .inc-card.sev-moderate {
+      border-left-color: var(--amber);
+    }
+
+    .inc-card.sev-low {
+      border-left-color: var(--green);
+    }
+
+    .inc-card.sev-conditional {
+      border-left-color: var(--purple);
+    }
+
+    .inc-card.sev-unknown {
+      border-left-color: var(--text-muted);
+    }
+
+    .sev-pill {
       display: inline-block;
-      animation: pulse 1.4s ease-in-out infinite;
+      padding: 1px 7px;
+      border-radius: 99px;
+      font-size: 9px;
+      font-weight: 600;
+      border: 1px solid;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: .05em;
+      text-transform: uppercase;
     }
 
-    @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-
-      50% {
-        opacity: 0.4;
-        transform: scale(0.8);
-      }
+    .sev-critical .sev-pill {
+      color: var(--red);
+      background: rgba(248, 81, 73, 0.1);
+      border-color: rgba(248, 81, 73, 0.3);
     }
 
-    /* ── Scrollbar ──────────────────────────────────── */
-    ::-webkit-scrollbar {
-      width: 5px;
+    .sev-moderate .sev-pill {
+      color: var(--amber);
+      background: rgba(210, 153, 34, 0.1);
+      border-color: rgba(210, 153, 34, 0.3);
     }
 
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
+    .sev-low .sev-pill {
+      color: var(--green);
+      background: rgba(63, 185, 80, 0.1);
+      border-color: rgba(63, 185, 80, 0.3);
     }
 
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 10px;
+    .sev-conditional .sev-pill {
+      color: var(--purple);
+      background: rgba(188, 140, 255, 0.1);
+      border-color: rgba(188, 140, 255, 0.3);
     }
 
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
+    .sev-unknown .sev-pill {
+      color: var(--text-muted);
+      background: var(--surface3);
+      border-color: var(--border);
     }
 
-    /* ── Constraint chips ───────────────────────────── */
-    .constraint-chip {
+    .inc-id {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .inc-type {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      text-transform: capitalize;
+      margin-top: 1px;
+    }
+
+    .inc-loc {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .unit-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .unit-tag {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: #fef9c3;
-      border: 1px solid #fde047;
-      color: #713f12;
-      font-size: 11px;
+      gap: 4px;
+      background: rgba(88, 166, 255, 0.08);
+      color: var(--blue);
+      border: 1px solid rgba(88, 166, 255, 0.2);
+      font-size: 10px;
       font-weight: 500;
-      padding: 4px 10px;
+      padding: 2px 7px;
       border-radius: 4px;
+    }
+
+    .awaiting {
+      font-size: 10px;
+      color: var(--text-muted);
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-style: italic;
+    }
+
+    /* constraint strip */
+    #constraint-row {
+      flex-shrink: 0;
+      padding: 7px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+      background: rgba(210, 153, 34, 0.04);
+    }
+
+    #constraints-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      font-weight: 600;
+      font-family: 'IBM Plex Mono', monospace;
+      flex-shrink: 0;
+    }
+
+    .constraint-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(210, 153, 34, 0.08);
+      color: var(--amber);
+      border: 1px solid rgba(210, 153, 34, 0.2);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+      border-top: none;
+      border-right: none;
+      border-bottom: none;
+      overflow: hidden;
+    }
+
+    /* Score */
+    #score-section {
+      flex-shrink: 0;
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #score-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    #total-score-num {
+      font-size: 42px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--text-primary);
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: -.03em;
+    }
+
+    .bar-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 9px;
+    }
+
+    .bar-lbl {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .bar-val {
+      font-weight: 500;
+      color: var(--text-primary);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+    }
+
+    .bar-track {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width .6s ease;
+    }
+
+    #grader-remark {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: rgba(88, 166, 255, 0.05);
+      border-left: 2px solid rgba(88, 166, 255, 0.3);
+      border-radius: 0 6px 6px 0;
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    /* Log */
+    #log-section {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: none;
+    }
+
+    #log-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .log-item {
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      background: var(--surface2);
+      font-size: 11px;
+      transition: border-color .15s;
+    }
+
+    .log-item:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .log-item-hd {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .log-turn {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--surface3);
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    .log-score {
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .log-dispatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin-bottom: 4px;
+    }
+
+    .log-reason {
+      font-size: 10px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      font-style: italic;
+      border-top: 1px solid var(--border);
+      padding-top: 5px;
+      margin-top: 3px;
+    }
+
+    /* ── CHART ── */
+    #chart-panel {
+      grid-column: 1;
+      grid-row: 2;
+      border-left: none;
+      border-bottom: none;
+      border-right: none;
+    }
+
+    #chart-wrap {
+      flex: 1;
+      padding: 8px 14px 10px;
+      min-height: 0;
+    }
+
+    /* ── EMPTY ── */
+    .empty {
+      text-align: center;
+      padding: 24px 16px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-style: italic;
+    }
+
+    /* ── SCANLINE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.03) 2px,
+          rgba(0, 0, 0, 0.03) 4px);
+      pointer-events: none;
+      z-index: 9999;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ══════════════════════════════════════════════════
-       TOP BAR
-  ═══════════════════════════════════════════════════ -->
-  <!-- Activity Bar -->
-  <div id="activeTaskBar" class="flex">
-    <div>
-      <span class="mr-2">⚡</span>
-      <span id="activeTaskMsg">Background activity detected on another task</span>
-    </div>
-    <button onclick="switchToActive()"
-      class="bg-pink-100 hover:bg-pink-200 text-pink-700 px-3 py-1 rounded border border-pink-300 text-[10px] font-bold uppercase transition-colors">Switch
-      View</button>
-  </div>
-
-  <div id="topbar" class="flex items-center justify-between px-6 py-3">
-    <div class="flex items-center gap-4">
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">🚨</span>
-        <div>
-          <div class="text-white font-bold text-lg leading-tight tracking-tight">Disaster Response RL</div>
-          <div class="text-blue-300 text-xs font-medium">Multi-Agent Evaluation Platform</div>
-        </div>
+  <!-- NAV -->
+  <div id="nav">
+    <div id="nav-left">
+      <div id="nav-logo">DR</div>
+      <div>
+        <div id="nav-title">Disaster Response RL</div>
+        <div id="nav-sub">Multi-agent evaluation platform</div>
       </div>
-      <div class="h-8 w-px bg-blue-700 mx-2"></div>
-      <div id="statusPill" class="status-pill status-waiting">
-        <span class="pulse-dot" style="background:#92400e"></span>
-        Waiting for Agent
+      <div class="nav-sep"></div>
+      <div id="statusChip" class="status-chip waiting">
+        <span class="dot pulse"></span>Waiting for agent
       </div>
     </div>
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1.5 mr-2">
-        <input type="checkbox" id="autoSync" checked class="accent-pink-500">
-        <label for="autoSync"
-          class="text-[10px] text-blue-200 font-bold uppercase tracking-wider cursor-pointer">Auto-Sync</label>
-      </div>
-      <span id="stepCounter"
-        class="text-blue-200 text-xs font-mono bg-blue-900/40 border border-blue-700 px-3 py-1.5 rounded">STEP —</span>
-      <select id="taskSelect"
-        class="bg-blue-900 border border-blue-600 text-white text-xs font-semibold rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
-        <!-- populated by JS -->
-      </select>
+    <div id="nav-right">
+      <label id="autosync-wrap">
+        <input type="checkbox" id="autoSync" checked>
+        Auto-sync
+      </label>
+      <div id="step-badge">step —</div>
+      <select id="taskSelect"></select>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════
-       MAIN GRID
-  ═══════════════════════════════════════════════════ -->
-  <div
-    style="display:grid; grid-template-columns: 1fr 300px; grid-template-rows: auto auto auto; gap: 0; height: calc(100vh - 62px);">
+  <!-- ACTIVITY BANNER -->
+  <div id="activityBanner" class="flex items-center justify-between">
+    <span id="activityMsg">Background activity detected on another task</span>
+    <button onclick="switchToActive()">Switch view</button>
+  </div>
 
-    <!-- LEFT-TOP: Incident Dispatch Matrix -->
-    <div style="grid-column:1; grid-row:1; overflow:auto; padding: 12px 8px 6px 12px;">
-      <div class="card" style="height:100%;">
-        <div class="card-header">
-          <span>📡 Live Dispatch Matrix</span>
-          <span id="matrixMeta" class="text-slate-400 font-normal normal-case tracking-normal"
-            style="font-size:11px;">Incidents shown from active scenario</span>
-        </div>
-        <div id="incidentGrid"
-          style="padding:12px; display:grid; grid-template-columns: repeat(auto-fill,minmax(210px,1fr)); gap:10px; min-height:180px;">
-          <!-- rendered by JS -->
-        </div>
-        <div style="padding:0 12px 12px;">
-          <div class="card-header" style="margin-bottom:8px; border-radius:6px 6px 0 0;">⚠️ Active Constraints</div>
-          <div id="constraintLog"
-            style="display:flex; flex-wrap:wrap; gap:6px; padding:8px; background:#fffbeb; border:1px solid #fde68a; border-radius:0 0 6px 6px; min-height:36px;">
-            <span class="text-slate-400 text-xs italic">Loading...</span>
-          </div>
-        </div>
+  <!-- MAIN -->
+  <div id="main">
+
+    <!-- DISPATCH PANEL -->
+    <div class="panel" id="dispatch-panel">
+      <div class="panel-hd">
+        <span>Live dispatch matrix</span>
+        <span id="matrixMeta" class="panel-hd-meta">—</span>
+      </div>
+      <div class="panel-body">
+        <div id="incident-grid"></div>
+      </div>
+      <div id="constraint-row">
+        <span id="constraints-label">Constraints ·</span>
+        <div id="constraint-tags" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
       </div>
     </div>
 
-    <!-- RIGHT: Grader Score Panel -->
-    <div
-      style="grid-column:2; grid-row:1/3; overflow:auto; padding: 12px 12px 6px 4px; display:flex; flex-direction:column; gap:8px;">
+    <!-- SIDEBAR -->
+    <div id="sidebar">
 
-      <!-- Score breakdown -->
-      <div class="card" style="flex-shrink:0;">
-        <div class="card-header">📊 Grader Breakdown</div>
-        <div style="padding:14px;">
-          <div style="text-align:center; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid #e2e8f0;">
-            <div
-              style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px;">
-              Total Score</div>
-            <div id="totalScore" style="font-size:44px; font-weight:800; color:#0f2447; line-height:1;">—</div>
-          </div>
-
-          <!-- bars -->
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <div>
-              <div
-                style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
-                <span>Incident Coverage</span><span id="sc-cov" style="color:#1d4ed8;">—</span>
-              </div>
-              <div class="score-bar-track">
-                <div id="bar-cov" class="score-bar-fill" style="background:#1d4ed8;width:0%"></div>
-              </div>
-            </div>
-            <div>
-              <div
-                style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
-                <span>Dispatch Efficiency</span><span id="sc-eff" style="color:#0891b2;">—</span>
-              </div>
-              <div class="score-bar-track">
-                <div id="bar-eff" class="score-bar-fill" style="background:#0891b2;width:0%"></div>
-              </div>
-            </div>
-            <div>
-              <div
-                style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
-                <span>Priority Urgency</span><span id="sc-pri" style="color:#7c3aed;">—</span>
-              </div>
-              <div class="score-bar-track">
-                <div id="bar-pri" class="score-bar-fill" style="background:#7c3aed;width:0%"></div>
-              </div>
-            </div>
-            <div>
-              <div
-                style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
-                <span>Protocol Adherence</span><span id="sc-con" style="color:#b45309;">—</span>
-              </div>
-              <div class="score-bar-track">
-                <div id="bar-con" class="score-bar-fill" style="background:#b45309;width:0%"></div>
-              </div>
-            </div>
-            <div>
-              <div
-                style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
-                <span>Reasoning Depth</span><span id="sc-rea" style="color:#15803d;">—</span>
-              </div>
-              <div class="score-bar-track">
-                <div id="bar-rea" class="score-bar-fill" style="background:#15803d;width:0%"></div>
-              </div>
+      <!-- Score -->
+      <div id="score-section">
+        <div id="score-label">Mission score</div>
+        <div id="total-score-num">—</div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:0;">
+          <div class="bar-row">
+            <div class="bar-lbl"><span>Coverage</span><span class="bar-val" id="sc-cov">—</span></div>
+            <div class="bar-track">
+              <div class="bar-fill" id="bar-cov" style="background:#58a6ff;width:0%"></div>
             </div>
           </div>
-
-          <!-- Remark -->
-          <div
-            style="margin-top:14px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;border-left:3px solid #1d4ed8;">
-            <div
-              style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:.06em;margin-bottom:4px;">
-              Evaluator Remark</div>
-            <div id="graderRemark" style="font-size:12px;color:#1e293b;font-style:italic;">Awaiting evaluation...</div>
+          <div class="bar-row">
+            <div class="bar-lbl"><span>Efficiency</span><span class="bar-val" id="sc-eff">—</span></div>
+            <div class="bar-track">
+              <div class="bar-fill" id="bar-eff" style="background:#3fb950;width:0%"></div>
+            </div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-lbl"><span>Priority</span><span class="bar-val" id="sc-pri">—</span></div>
+            <div class="bar-track">
+              <div class="bar-fill" id="bar-pri" style="background:#bc8cff;width:0%"></div>
+            </div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-lbl"><span>Protocol</span><span class="bar-val" id="sc-con">—</span></div>
+            <div class="bar-track">
+              <div class="bar-fill" id="bar-con" style="background:#d29922;width:0%"></div>
+            </div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-lbl"><span>Reasoning</span><span class="bar-val" id="sc-rea">—</span></div>
+            <div class="bar-track">
+              <div class="bar-fill" id="bar-rea" style="background:#f0883e;width:0%"></div>
+            </div>
           </div>
         </div>
+        <div id="grader-remark">Awaiting evaluation...</div>
       </div>
 
       <!-- Action Log -->
-      <div class="card" style="flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;">
-        <div class="card-header" style="flex-shrink:0;">
-          📋 Action Log
-          <span
-            style="font-size:10px;font-weight:500;color:#94a3b8;font-style:italic;text-transform:none;letter-spacing:0;">Latest
-            first</span>
+      <div id="log-section" class="panel">
+        <div class="panel-hd">
+          <span>Action log</span>
+          <span class="panel-hd-meta">latest first</span>
         </div>
-        <div id="aiLog" style="flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:7px;">
-          <div style="text-align:center;color:#94a3b8;font-size:12px;margin-top:20px;font-style:italic;">Simulation
-            inactive...</div>
+        <div id="log-scroll">
+          <div class="empty">Simulation inactive...</div>
         </div>
       </div>
 
     </div>
 
-    <!-- LEFT-BOTTOM: Reward Trajectory Chart -->
-    <div style="grid-column:1; grid-row:2; padding: 6px 8px 12px 12px;">
-      <div class="card" style="height: 220px; display:flex; flex-direction:column;">
-        <div class="card-header">
-          📈 Reward Trajectory — Per-Step Score
-          <span id="chartInfo"
-            style="font-size:11px;font-weight:500;color:#94a3b8;text-transform:none;letter-spacing:0;">No data
-            yet</span>
-        </div>
-        <div style="flex:1; padding:12px 16px 10px; min-height:0;">
-          <canvas id="rewardChart"></canvas>
-        </div>
+    <!-- CHART -->
+    <div class="panel" id="chart-panel">
+      <div class="panel-hd">
+        <span>Reward trajectory</span>
+        <span id="chartInfo" class="panel-hd-meta">No data yet</span>
+      </div>
+      <div id="chart-wrap">
+        <canvas id="rewardChart"></canvas>
       </div>
     </div>
 
@@ -474,16 +824,9 @@
     const UNIT_ICONS = {
       fire: '🚒', police: '🚓', ambulance: '🚑', med: '🚑',
       hazmat: '☣️', bomb: '💣', marine: '🚤', aviation: '🚁',
-      water: '🚰', m1: '🚤', m2: '🚤',
-      a1: '🚁', a2: '🚁', a3: '🚁', a4: '🚁'
+      water: '🚰', m1: '🚤', m2: '🚤', a1: '🚁', a2: '🚁', a3: '🚁', a4: '🚁'
     };
-
-    function getIcon(name) {
-      const n = name.toLowerCase();
-      for (const k in UNIT_ICONS) { if (n.includes(k)) return UNIT_ICONS[k]; }
-      return '🚙';
-    }
-
+    function getIcon(n) { n = n.toLowerCase(); for (const k in UNIT_ICONS) { if (n.includes(k)) return UNIT_ICONS[k]; } return '🚙'; }
     function sevClass(s) {
       s = (s || '').toLowerCase();
       if (s === 'critical') return 'sev-critical';
@@ -492,30 +835,29 @@
       if (s === 'conditional') return 'sev-conditional';
       return 'sev-unknown';
     }
-
     function setStatus(type, label) {
-      const pill = document.getElementById('statusPill');
-      const dotColors = { waiting: '#92400e', running: '#1e40af', done: '#14532d' };
-      pill.className = `status-pill status-${type}`;
-      pill.innerHTML = `<span class="pulse-dot" style="background:${dotColors[type]}"></span>${label}`;
+      const chip = document.getElementById('statusChip');
+      chip.className = `status-chip ${type}`;
+      const pulseClass = (type === 'running') ? 'dot pulse' : 'dot';
+      chip.innerHTML = `<span class="${pulseClass}"></span>${label}`;
     }
 
     async function init() {
-      // Populate task dropdown
-      const tr = await fetch('/tasks');
-      const tasks = await tr.json();
-      const sel = document.getElementById('taskSelect');
-      Object.keys(tasks).forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t;
-        const diff = tasks[t].difficulty || '';
-        const label = t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        opt.textContent = `${label} (${diff})`;
-        sel.appendChild(opt);
-      });
-      sel.addEventListener('change', e => { currentTaskId = e.target.value; fetchDashboard(); });
+      try {
+        const tr = await fetch('/tasks');
+        const tasks = await tr.json();
+        const sel = document.getElementById('taskSelect');
+        Object.keys(tasks).forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t;
+          const diff = tasks[t].difficulty || '';
+          const label = t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          opt.textContent = `${label}${diff ? ' (' + diff + ')' : ''}`;
+          sel.appendChild(opt);
+        });
+        sel.addEventListener('change', e => { currentTaskId = e.target.value; fetchDashboard(); });
+      } catch (e) { }
 
-      // Init chart
       const ctx = document.getElementById('rewardChart').getContext('2d');
       rewardChart = new Chart(ctx, {
         type: 'line',
@@ -524,16 +866,16 @@
           datasets: [{
             label: 'Step Reward',
             data: [],
-            borderColor: '#1d4ed8',
-            backgroundColor: 'rgba(29,78,216,0.08)',
-            borderWidth: 2.5,
+            borderColor: '#58a6ff',
+            backgroundColor: 'rgba(88,166,255,0.06)',
+            borderWidth: 1.5,
             fill: true,
             tension: 0.35,
-            pointBackgroundColor: '#fff',
-            pointBorderColor: '#1d4ed8',
-            pointBorderWidth: 2,
-            pointRadius: 5,
-            pointHoverRadius: 7
+            pointBackgroundColor: '#0a0c10',
+            pointBorderColor: '#58a6ff',
+            pointBorderWidth: 1.5,
+            pointRadius: 4,
+            pointHoverRadius: 6
           }]
         },
         options: {
@@ -542,26 +884,28 @@
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: '#0f2447',
-              titleColor: '#93c5fd',
-              bodyColor: '#f1f5f9',
+              backgroundColor: '#161b22',
+              borderColor: 'rgba(255,255,255,0.1)',
+              borderWidth: 1,
+              titleColor: '#58a6ff',
+              bodyColor: '#c9d1d9',
               padding: 10,
               cornerRadius: 6,
               callbacks: {
-                title: items => `Turn ${items[0].label}`,
-                label: item => ` Score: ${(item.raw).toFixed(3)}`
+                title: i => `Turn ${i[0].label}`,
+                label: i => ` Score: ${i.raw.toFixed(3)}`
               }
             }
           },
           scales: {
             y: {
               min: 0, max: 1,
-              grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
-              ticks: { color: '#64748b', font: { family: 'Inter', size: 11 }, stepSize: 0.25 }
+              grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+              ticks: { color: '#484f58', font: { family: 'IBM Plex Mono', size: 10 }, stepSize: 0.25 }
             },
             x: {
-              grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-              ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }
+              grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+              ticks: { color: '#484f58', font: { family: 'IBM Plex Mono', size: 10 } }
             }
           }
         }
@@ -575,31 +919,21 @@
       try {
         const res = await fetch('/latest');
         const data = await res.json();
-        const bar = document.getElementById('activeTaskBar');
+        const banner = document.getElementById('activityBanner');
         const autoSync = document.getElementById('autoSync').checked;
-
         if (data.task_id && data.task_id !== currentTaskId) {
-          if (autoSync) {
-            switchToActive(data.task_id);
-            return;
-          }
+          if (autoSync) { switchToActive(data.task_id); return; }
           const label = data.task_id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-          document.getElementById('activeTaskMsg').textContent = `Background activity detected on [${label}]`;
-          bar.style.display = 'flex';
+          document.getElementById('activityMsg').textContent = `Background activity on [${label}]`;
+          banner.style.display = 'flex';
           window.latestActiveTaskId = data.task_id;
-        } else {
-          bar.style.display = 'none';
-        }
+        } else { banner.style.display = 'none'; }
       } catch (e) { }
     }
 
     function switchToActive(tid) {
       const target = tid || window.latestActiveTaskId;
-      if (target) {
-        currentTaskId = target;
-        document.getElementById('taskSelect').value = currentTaskId;
-        fetchDashboard();
-      }
+      if (target) { currentTaskId = target; document.getElementById('taskSelect').value = currentTaskId; fetchDashboard(); }
     }
 
     async function fetchDashboard() {
@@ -607,62 +941,55 @@
         const res = await fetch(`/state?task_id=${currentTaskId}`);
         if (res.status === 400 || res.status === 404) return;
         const data = await res.json();
+        if (data.not_started) { setStatus('waiting', 'Waiting for agent'); return; }
 
-        if (data.not_started) { setStatus('waiting', 'Waiting for Agent'); return; }
         const done = data.terminated || data.truncated;
-        setStatus(done ? 'done' : 'running', done ? '✓ MISSION COMPLETE' : 'Agent Running...');
+        setStatus(done ? 'done' : 'running', done ? 'Mission complete' : 'Agent running');
+        document.getElementById('step-badge').textContent =
+          `step ${data.observation.step} / ${data.observation.max_steps}`;
 
-        document.getElementById('stepCounter').textContent =
-          `STEP ${data.observation.step} / ${data.observation.max_steps}`;
-
-        // Chart update
         const histRewards = data.history.map(h => h.reward);
         document.getElementById('chartInfo').textContent =
-          `${histRewards.length} reward points`;
-
+          `${histRewards.length} reward point${histRewards.length !== 1 ? 's' : ''}`;
         rewardChart.data.labels = histRewards.map((_, i) => `${i + 1}`);
         rewardChart.data.datasets[0].data = histRewards;
         rewardChart.update('none');
 
-        // Cumulative Reward Display
+        const base = +data.reward;
+        document.getElementById('total-score-num').textContent = base.toFixed(2);
+        document.getElementById('grader-remark').textContent =
+          data.terminated ? 'Success — board cleared.' :
+            (data.truncated ? 'Time up — incomplete.' : 'Active mission in progress.');
 
-        const baseScore = +data.reward;
-        document.getElementById('totalScore').textContent = baseScore.toFixed(2);
-
-        const remark = document.getElementById('graderRemark');
-        remark.innerHTML = `<div class="mb-1">${data.terminated ? 'SUCCESS: Board Cleared' : (data.truncated ? 'TIME UP: Incomplete' : 'Active Mission')}</div>`;
-
-        // Fill the Grader Breakdown bars dynamically!
-        const updateBar = (id, multiplier) => {
-          // Calculate a realistic percentage based on the score
-          const val = Math.min(100, Math.max(0, (baseScore * multiplier) * 100)).toFixed(0);
+        const updateBar = (id, mul) => {
+          const val = Math.min(100, Math.max(0, (base * mul) * 100)).toFixed(0);
           document.getElementById(`sc-${id}`).textContent = `${val}%`;
           document.getElementById(`bar-${id}`).style.width = `${val}%`;
         };
+        updateBar('cov', 1.05);
+        updateBar('eff', 0.95);
+        updateBar('pri', 1.10);
+        updateBar('con', done ? 1.0 : 0.85);
+        updateBar('rea', 1.0);
 
-        updateBar('cov', 1.05); // Incident Coverage
-        updateBar('eff', 0.95); // Dispatch Efficiency
-        updateBar('pri', 1.10); // Priority Urgency
-        updateBar('con', done ? 1.0 : 0.85); // Protocol Adherence
-        updateBar('rea', 1.0);  // Reasoning Depth
         if (data.observation) {
           const obs = data.observation;
 
           // Constraints
-          const cLog = document.getElementById('constraintLog');
-          cLog.innerHTML = '';
+          const ctags = document.getElementById('constraint-tags');
+          ctags.innerHTML = '';
           if (obs.constraints && obs.constraints.length) {
             obs.constraints.forEach(c => {
-              const chip = document.createElement('div');
-              chip.className = 'constraint-chip';
-              chip.innerHTML = `⚠ ${c}`;
-              cLog.appendChild(chip);
+              const chip = document.createElement('span');
+              chip.className = 'constraint-tag';
+              chip.textContent = c;
+              ctags.appendChild(chip);
             });
           } else {
-            cLog.innerHTML = '<span class="text-slate-400 text-xs italic">No constraints for this scenario.</span>';
+            ctags.innerHTML = '<span style="font-size:10px;color:var(--text-muted);font-style:italic;">None active</span>';
           }
 
-          // Build dispatch map from history
+          // Dispatch map from history
           const dispatchMap = {};
           (obs.previous_actions || []).forEach(paStr => {
             try {
@@ -675,70 +1002,67 @@
           });
 
           // Incident grid
-          // Incident grid
-          const grid = document.getElementById('incidentGrid');
-          document.getElementById('matrixMeta').textContent = `${obs.active_incidents.length} active incident(s)`;
+          const grid = document.getElementById('incident-grid');
+          document.getElementById('matrixMeta').textContent =
+            `${obs.active_incidents.length} active incident${obs.active_incidents.length !== 1 ? 's' : ''}`;
 
           if (obs.active_incidents && obs.active_incidents.length > 0) {
             grid.innerHTML = '';
             obs.active_incidents.forEach(inc => {
               const card = document.createElement('div');
               card.className = `inc-card ${sevClass(inc.severity)}`;
-
               const dispatched = dispatchMap[inc.id] ? [...dispatchMap[inc.id]] : [];
               const unitHTML = dispatched.length
-                ? dispatched.map(u => `<span class="unit-badge">${getIcon(u)} ${u.replace(/^unit_/, '')}</span>`).join(' ')
+                ? dispatched.map(u => `<span class="unit-tag">${getIcon(u)} ${u.replace(/^unit_/, '')}</span>`).join('')
                 : '<span class="awaiting">Awaiting dispatch...</span>';
-
               card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;">
                   <div>
-                    <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:.05em;margin-bottom:2px;">${inc.id} · ${inc.location || '—'}</div>
-                    <div style="font-size:13px;font-weight:700;color:#0f172a;text-transform:capitalize;">${(inc.type || '').replace(/_/g, ' ')}</div>
+                    <div class="inc-id">${inc.id}</div>
+                    <div class="inc-type">${(inc.type || '').replace(/_/g, ' ')}</div>
+                    ${inc.location ? `<div class="inc-loc">${inc.location}</div>` : ''}
                   </div>
-                  <span class="severity-badge">${inc.severity}</span>
+                  <span class="sev-pill">${inc.severity}</span>
                 </div>
-                <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">${unitHTML}</div>`;
+                <div class="unit-row">${unitHTML}</div>`;
               grid.appendChild(card);
             });
-            // CACHE THE WINNING BOARD:
             window.lastKnownGridHTML = grid.innerHTML;
           } else if (done && window.lastKnownGridHTML) {
-            // If the game is done, freeze the board and dim it slightly!
             grid.innerHTML = window.lastKnownGridHTML;
-            grid.style.opacity = '0.6';
-            document.getElementById('matrixMeta').textContent = "All incidents successfully resolved!";
+            grid.style.opacity = '0.45';
+            document.getElementById('matrixMeta').textContent = 'All incidents resolved';
           } else {
             grid.innerHTML = '';
           }
+
           // Action log
-          const logEl = document.getElementById('aiLog');
+          const logEl = document.getElementById('log-scroll');
           logEl.innerHTML = '';
           const actions = [...(obs.previous_actions || [])].reverse();
           if (!actions.length) {
-            logEl.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;margin-top:20px;font-style:italic;">No actions yet...</div>';
+            logEl.innerHTML = '<div class="empty">No actions yet...</div>';
           } else {
             actions.forEach(paStr => {
               try {
                 const pa = JSON.parse(paStr);
                 const r = +pa.reward;
-                const rColor = r >= 0.8 ? '#15803d' : r >= 0.5 ? '#b45309' : '#dc2626';
+                const rColor = r >= 0.8 ? '#3fb950' : r >= 0.5 ? '#d29922' : '#f85149';
                 const dispHtml = (pa.dispatches || []).length
                   ? (pa.dispatches || []).map(d =>
-                    `<span class="unit-badge" style="font-size:10px;">${getIcon(d.unit)} ${d.unit.replace(/^unit_/, '')} → ${d.incident_id}</span>`
-                  ).join(' ')
-                  : '<span style="color:#94a3b8;font-size:10px;font-style:italic;">No dispatch</span>';
-
-                const row = document.createElement('div');
-                row.className = 'log-row';
-                row.innerHTML = `
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-                  <span style="font-size:10px;font-weight:700;color:#64748b;background:#e2e8f0;padding:2px 7px;border-radius:3px;">TURN ${pa.step}</span>
-                  <span style="font-size:13px;font-weight:800;color:${rColor};font-family:monospace;">${r.toFixed(3)}</span>
-                </div>
-                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;">${dispHtml}</div>
-                ${pa.reasoning ? `<div style="font-size:11px;color:#475569;font-style:italic;line-height:1.5;border-top:1px solid #e2e8f0;padding-top:5px;margin-top:2px;">"${pa.reasoning}"</div>` : ''}`;
-                logEl.appendChild(row);
+                    `<span class="unit-tag" style="font-size:10px;">${getIcon(d.unit)} ${d.unit.replace(/^unit_/, '')} → ${d.incident_id}</span>`
+                  ).join('')
+                  : '<span style="font-size:10px;color:var(--text-muted);font-style:italic;">No dispatch</span>';
+                const item = document.createElement('div');
+                item.className = 'log-item';
+                item.innerHTML = `
+                  <div class="log-item-hd">
+                    <span class="log-turn">turn ${pa.step}</span>
+                    <span class="log-score" style="color:${rColor}">${r.toFixed(3)}</span>
+                  </div>
+                  <div class="log-dispatches">${dispHtml}</div>
+                  ${pa.reasoning ? `<div class="log-reason">"${pa.reasoning}"</div>` : ''}`;
+                logEl.appendChild(item);
               } catch (e) { }
             });
           }
