@@ -1,15 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Disaster Response RL — Evaluation Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'Inter', sans-serif;
@@ -29,7 +41,7 @@
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
     }
 
     .card-header {
@@ -59,12 +71,30 @@
       gap: 8px;
       transition: box-shadow 0.2s;
     }
-    .inc-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .inc-card.sev-critical { border-left-color: #dc2626; }
-    .inc-card.sev-moderate { border-left-color: #f59e0b; }
-    .inc-card.sev-low      { border-left-color: #22c55e; }
-    .inc-card.sev-conditional { border-left-color: #8b5cf6; }
-    .inc-card.sev-unknown  { border-left-color: #64748b; }
+
+    .inc-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .inc-card.sev-critical {
+      border-left-color: #dc2626;
+    }
+
+    .inc-card.sev-moderate {
+      border-left-color: #f59e0b;
+    }
+
+    .inc-card.sev-low {
+      border-left-color: #22c55e;
+    }
+
+    .inc-card.sev-conditional {
+      border-left-color: #8b5cf6;
+    }
+
+    .inc-card.sev-unknown {
+      border-left-color: #64748b;
+    }
 
     .severity-badge {
       font-size: 9px;
@@ -75,11 +105,31 @@
       border-radius: 4px;
       border: 1px solid currentColor;
     }
-    .sev-critical .severity-badge { color: #dc2626; background: #fef2f2; }
-    .sev-moderate .severity-badge { color: #d97706; background: #fffbeb; }
-    .sev-low .severity-badge      { color: #16a34a; background: #f0fdf4; }
-    .sev-conditional .severity-badge { color: #7c3aed; background: #f5f3ff; }
-    .sev-unknown .severity-badge  { color: #475569; background: #f1f5f9; }
+
+    .sev-critical .severity-badge {
+      color: #dc2626;
+      background: #fef2f2;
+    }
+
+    .sev-moderate .severity-badge {
+      color: #d97706;
+      background: #fffbeb;
+    }
+
+    .sev-low .severity-badge {
+      color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .sev-conditional .severity-badge {
+      color: #7c3aed;
+      background: #f5f3ff;
+    }
+
+    .sev-unknown .severity-badge {
+      color: #475569;
+      background: #f1f5f9;
+    }
 
     /* ── Unit badges ────────────────────────────────── */
     .unit-badge {
@@ -112,6 +162,7 @@
       height: 7px;
       overflow: hidden;
     }
+
     .score-bar-fill {
       height: 100%;
       border-radius: 4px;
@@ -127,7 +178,11 @@
       font-size: 12px;
       transition: border-color 0.2s;
     }
-    .log-row:hover { border-left-color: #1d4ed8; background: #eff6ff; }
+
+    .log-row:hover {
+      border-left-color: #1d4ed8;
+      background: #eff6ff;
+    }
 
     /* ── Status pill ────────────────────────────────── */
     .status-pill {
@@ -141,7 +196,12 @@
       letter-spacing: 0.07em;
       text-transform: uppercase;
     }
-    .status-done     { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+
+    .status-done {
+      background: #dcfce7;
+      color: #14532d;
+      border: 1px solid #86efac;
+    }
 
     #activeTaskBar {
       display: none;
@@ -158,21 +218,56 @@
       top: 0;
       z-index: 50;
     }
-    @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
 
     .pulse-dot {
-      width: 7px; height: 7px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       display: inline-block;
       animation: pulse 1.4s ease-in-out infinite;
     }
-    @keyframes pulse { 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:0.4; transform:scale(0.8); } }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.8);
+      }
+    }
 
     /* ── Scrollbar ──────────────────────────────────── */
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
 
     /* ── Constraint chips ───────────────────────────── */
     .constraint-chip {
@@ -189,6 +284,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- ══════════════════════════════════════════════════
@@ -197,10 +293,12 @@
   <!-- Activity Bar -->
   <div id="activeTaskBar" class="flex">
     <div>
-      <span class="mr-2">⚡</span> 
+      <span class="mr-2">⚡</span>
       <span id="activeTaskMsg">Background activity detected on another task</span>
     </div>
-    <button onclick="switchToActive()" class="bg-pink-100 hover:bg-pink-200 text-pink-700 px-3 py-1 rounded border border-pink-300 text-[10px] font-bold uppercase transition-colors">Switch View</button>
+    <button onclick="switchToActive()"
+      class="bg-pink-100 hover:bg-pink-200 text-pink-700 px-3 py-1 rounded border border-pink-300 text-[10px] font-bold uppercase transition-colors">Switch
+      View</button>
   </div>
 
   <div id="topbar" class="flex items-center justify-between px-6 py-3">
@@ -221,10 +319,13 @@
     <div class="flex items-center gap-3">
       <div class="flex items-center gap-1.5 mr-2">
         <input type="checkbox" id="autoSync" checked class="accent-pink-500">
-        <label for="autoSync" class="text-[10px] text-blue-200 font-bold uppercase tracking-wider cursor-pointer">Auto-Sync</label>
+        <label for="autoSync"
+          class="text-[10px] text-blue-200 font-bold uppercase tracking-wider cursor-pointer">Auto-Sync</label>
       </div>
-      <span id="stepCounter" class="text-blue-200 text-xs font-mono bg-blue-900/40 border border-blue-700 px-3 py-1.5 rounded">STEP —</span>
-      <select id="taskSelect" class="bg-blue-900 border border-blue-600 text-white text-xs font-semibold rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <span id="stepCounter"
+        class="text-blue-200 text-xs font-mono bg-blue-900/40 border border-blue-700 px-3 py-1.5 rounded">STEP —</span>
+      <select id="taskSelect"
+        class="bg-blue-900 border border-blue-600 text-white text-xs font-semibold rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
         <!-- populated by JS -->
       </select>
     </div>
@@ -233,21 +334,25 @@
   <!-- ══════════════════════════════════════════════════
        MAIN GRID
   ═══════════════════════════════════════════════════ -->
-  <div style="display:grid; grid-template-columns: 1fr 300px; grid-template-rows: auto auto auto; gap: 0; height: calc(100vh - 62px);">
+  <div
+    style="display:grid; grid-template-columns: 1fr 300px; grid-template-rows: auto auto auto; gap: 0; height: calc(100vh - 62px);">
 
     <!-- LEFT-TOP: Incident Dispatch Matrix -->
     <div style="grid-column:1; grid-row:1; overflow:auto; padding: 12px 8px 6px 12px;">
       <div class="card" style="height:100%;">
         <div class="card-header">
           <span>📡 Live Dispatch Matrix</span>
-          <span id="matrixMeta" class="text-slate-400 font-normal normal-case tracking-normal" style="font-size:11px;">Incidents shown from active scenario</span>
+          <span id="matrixMeta" class="text-slate-400 font-normal normal-case tracking-normal"
+            style="font-size:11px;">Incidents shown from active scenario</span>
         </div>
-        <div id="incidentGrid" style="padding:12px; display:grid; grid-template-columns: repeat(auto-fill,minmax(210px,1fr)); gap:10px; min-height:180px;">
+        <div id="incidentGrid"
+          style="padding:12px; display:grid; grid-template-columns: repeat(auto-fill,minmax(210px,1fr)); gap:10px; min-height:180px;">
           <!-- rendered by JS -->
         </div>
         <div style="padding:0 12px 12px;">
           <div class="card-header" style="margin-bottom:8px; border-radius:6px 6px 0 0;">⚠️ Active Constraints</div>
-          <div id="constraintLog" style="display:flex; flex-wrap:wrap; gap:6px; padding:8px; background:#fffbeb; border:1px solid #fde68a; border-radius:0 0 6px 6px; min-height:36px;">
+          <div id="constraintLog"
+            style="display:flex; flex-wrap:wrap; gap:6px; padding:8px; background:#fffbeb; border:1px solid #fde68a; border-radius:0 0 6px 6px; min-height:36px;">
             <span class="text-slate-400 text-xs italic">Loading...</span>
           </div>
         </div>
@@ -255,54 +360,75 @@
     </div>
 
     <!-- RIGHT: Grader Score Panel -->
-    <div style="grid-column:2; grid-row:1/3; overflow:auto; padding: 12px 12px 6px 4px; display:flex; flex-direction:column; gap:8px;">
+    <div
+      style="grid-column:2; grid-row:1/3; overflow:auto; padding: 12px 12px 6px 4px; display:flex; flex-direction:column; gap:8px;">
 
       <!-- Score breakdown -->
       <div class="card" style="flex-shrink:0;">
         <div class="card-header">📊 Grader Breakdown</div>
         <div style="padding:14px;">
           <div style="text-align:center; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid #e2e8f0;">
-            <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px;">Total Score</div>
+            <div
+              style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px;">
+              Total Score</div>
             <div id="totalScore" style="font-size:44px; font-weight:800; color:#0f2447; line-height:1;">—</div>
           </div>
 
           <!-- bars -->
           <div style="display:flex; flex-direction:column; gap:10px;">
             <div>
-              <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
+              <div
+                style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
                 <span>Incident Coverage</span><span id="sc-cov" style="color:#1d4ed8;">—</span>
               </div>
-              <div class="score-bar-track"><div id="bar-cov" class="score-bar-fill" style="background:#1d4ed8;width:0%"></div></div>
+              <div class="score-bar-track">
+                <div id="bar-cov" class="score-bar-fill" style="background:#1d4ed8;width:0%"></div>
+              </div>
             </div>
             <div>
-              <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
+              <div
+                style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
                 <span>Dispatch Efficiency</span><span id="sc-eff" style="color:#0891b2;">—</span>
               </div>
-              <div class="score-bar-track"><div id="bar-eff" class="score-bar-fill" style="background:#0891b2;width:0%"></div></div>
+              <div class="score-bar-track">
+                <div id="bar-eff" class="score-bar-fill" style="background:#0891b2;width:0%"></div>
+              </div>
             </div>
             <div>
-              <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
+              <div
+                style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
                 <span>Priority Urgency</span><span id="sc-pri" style="color:#7c3aed;">—</span>
               </div>
-              <div class="score-bar-track"><div id="bar-pri" class="score-bar-fill" style="background:#7c3aed;width:0%"></div></div>
+              <div class="score-bar-track">
+                <div id="bar-pri" class="score-bar-fill" style="background:#7c3aed;width:0%"></div>
+              </div>
             </div>
             <div>
-              <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
+              <div
+                style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
                 <span>Protocol Adherence</span><span id="sc-con" style="color:#b45309;">—</span>
               </div>
-              <div class="score-bar-track"><div id="bar-con" class="score-bar-fill" style="background:#b45309;width:0%"></div></div>
+              <div class="score-bar-track">
+                <div id="bar-con" class="score-bar-fill" style="background:#b45309;width:0%"></div>
+              </div>
             </div>
             <div>
-              <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
+              <div
+                style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#334155;margin-bottom:4px;">
                 <span>Reasoning Depth</span><span id="sc-rea" style="color:#15803d;">—</span>
               </div>
-              <div class="score-bar-track"><div id="bar-rea" class="score-bar-fill" style="background:#15803d;width:0%"></div></div>
+              <div class="score-bar-track">
+                <div id="bar-rea" class="score-bar-fill" style="background:#15803d;width:0%"></div>
+              </div>
             </div>
           </div>
 
           <!-- Remark -->
-          <div style="margin-top:14px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;border-left:3px solid #1d4ed8;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:.06em;margin-bottom:4px;">Evaluator Remark</div>
+          <div
+            style="margin-top:14px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;border-left:3px solid #1d4ed8;">
+            <div
+              style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:.06em;margin-bottom:4px;">
+              Evaluator Remark</div>
             <div id="graderRemark" style="font-size:12px;color:#1e293b;font-style:italic;">Awaiting evaluation...</div>
           </div>
         </div>
@@ -312,10 +438,13 @@
       <div class="card" style="flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;">
         <div class="card-header" style="flex-shrink:0;">
           📋 Action Log
-          <span style="font-size:10px;font-weight:500;color:#94a3b8;font-style:italic;text-transform:none;letter-spacing:0;">Latest first</span>
+          <span
+            style="font-size:10px;font-weight:500;color:#94a3b8;font-style:italic;text-transform:none;letter-spacing:0;">Latest
+            first</span>
         </div>
         <div id="aiLog" style="flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:7px;">
-          <div style="text-align:center;color:#94a3b8;font-size:12px;margin-top:20px;font-style:italic;">Simulation inactive...</div>
+          <div style="text-align:center;color:#94a3b8;font-size:12px;margin-top:20px;font-style:italic;">Simulation
+            inactive...</div>
         </div>
       </div>
 
@@ -326,7 +455,9 @@
       <div class="card" style="height: 220px; display:flex; flex-direction:column;">
         <div class="card-header">
           📈 Reward Trajectory — Per-Step Score
-          <span id="chartInfo" style="font-size:11px;font-weight:500;color:#94a3b8;text-transform:none;letter-spacing:0;">No data yet</span>
+          <span id="chartInfo"
+            style="font-size:11px;font-weight:500;color:#94a3b8;text-transform:none;letter-spacing:0;">No data
+            yet</span>
         </div>
         <div style="flex:1; padding:12px 16px 10px; min-height:0;">
           <canvas id="rewardChart"></canvas>
@@ -336,216 +467,216 @@
 
   </div>
 
-<script>
-  let currentTaskId = 'single_incident_response';
-  let rewardChart = null;
+  <script>
+    let currentTaskId = 'single_incident_response';
+    let rewardChart = null;
 
-  const UNIT_ICONS = {
-    fire: '🚒', police: '🚓', ambulance: '🚑', med: '🚑',
-    hazmat: '☣️', bomb: '💣', marine: '🚤', aviation: '🚁',
-    water: '🚰', m1: '🚤', m2: '🚤',
-    a1: '🚁', a2: '🚁', a3: '🚁', a4: '🚁'
-  };
+    const UNIT_ICONS = {
+      fire: '🚒', police: '🚓', ambulance: '🚑', med: '🚑',
+      hazmat: '☣️', bomb: '💣', marine: '🚤', aviation: '🚁',
+      water: '🚰', m1: '🚤', m2: '🚤',
+      a1: '🚁', a2: '🚁', a3: '🚁', a4: '🚁'
+    };
 
-  function getIcon(name) {
-    const n = name.toLowerCase();
-    for (const k in UNIT_ICONS) { if (n.includes(k)) return UNIT_ICONS[k]; }
-    return '🚙';
-  }
+    function getIcon(name) {
+      const n = name.toLowerCase();
+      for (const k in UNIT_ICONS) { if (n.includes(k)) return UNIT_ICONS[k]; }
+      return '🚙';
+    }
 
-  function sevClass(s) {
-    s = (s || '').toLowerCase();
-    if (s === 'critical') return 'sev-critical';
-    if (s === 'moderate') return 'sev-moderate';
-    if (s === 'low') return 'sev-low';
-    if (s === 'conditional') return 'sev-conditional';
-    return 'sev-unknown';
-  }
+    function sevClass(s) {
+      s = (s || '').toLowerCase();
+      if (s === 'critical') return 'sev-critical';
+      if (s === 'moderate') return 'sev-moderate';
+      if (s === 'low') return 'sev-low';
+      if (s === 'conditional') return 'sev-conditional';
+      return 'sev-unknown';
+    }
 
-  function setStatus(type, label) {
-    const pill = document.getElementById('statusPill');
-    const dotColors = { waiting: '#92400e', running: '#1e40af', done: '#14532d' };
-    pill.className = `status-pill status-${type}`;
-    pill.innerHTML = `<span class="pulse-dot" style="background:${dotColors[type]}"></span>${label}`;
-  }
+    function setStatus(type, label) {
+      const pill = document.getElementById('statusPill');
+      const dotColors = { waiting: '#92400e', running: '#1e40af', done: '#14532d' };
+      pill.className = `status-pill status-${type}`;
+      pill.innerHTML = `<span class="pulse-dot" style="background:${dotColors[type]}"></span>${label}`;
+    }
 
-  async function init() {
-    // Populate task dropdown
-    const tr = await fetch('/tasks');
-    const tasks = await tr.json();
-    const sel = document.getElementById('taskSelect');
-    Object.keys(tasks).forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t;
-      const diff = tasks[t].difficulty || '';
-      const label = t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      opt.textContent = `${label} (${diff})`;
-      sel.appendChild(opt);
-    });
-    sel.addEventListener('change', e => { currentTaskId = e.target.value; fetchDashboard(); });
+    async function init() {
+      // Populate task dropdown
+      const tr = await fetch('/tasks');
+      const tasks = await tr.json();
+      const sel = document.getElementById('taskSelect');
+      Object.keys(tasks).forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        const diff = tasks[t].difficulty || '';
+        const label = t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        opt.textContent = `${label} (${diff})`;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', e => { currentTaskId = e.target.value; fetchDashboard(); });
 
-    // Init chart
-    const ctx = document.getElementById('rewardChart').getContext('2d');
-    rewardChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Step Reward',
-          data: [],
-          borderColor: '#1d4ed8',
-          backgroundColor: 'rgba(29,78,216,0.08)',
-          borderWidth: 2.5,
-          fill: true,
-          tension: 0.35,
-          pointBackgroundColor: '#fff',
-          pointBorderColor: '#1d4ed8',
-          pointBorderWidth: 2,
-          pointRadius: 5,
-          pointHoverRadius: 7
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#0f2447',
-            titleColor: '#93c5fd',
-            bodyColor: '#f1f5f9',
-            padding: 10,
-            cornerRadius: 6,
-            callbacks: {
-              title: items => `Turn ${items[0].label}`,
-              label: item => ` Score: ${(item.raw).toFixed(3)}`
+      // Init chart
+      const ctx = document.getElementById('rewardChart').getContext('2d');
+      rewardChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Step Reward',
+            data: [],
+            borderColor: '#1d4ed8',
+            backgroundColor: 'rgba(29,78,216,0.08)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#fff',
+            pointBorderColor: '#1d4ed8',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f2447',
+              titleColor: '#93c5fd',
+              bodyColor: '#f1f5f9',
+              padding: 10,
+              cornerRadius: 6,
+              callbacks: {
+                title: items => `Turn ${items[0].label}`,
+                label: item => ` Score: ${(item.raw).toFixed(3)}`
+              }
+            }
+          },
+          scales: {
+            y: {
+              min: 0, max: 1,
+              grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+              ticks: { color: '#64748b', font: { family: 'Inter', size: 11 }, stepSize: 0.25 }
+            },
+            x: {
+              grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+              ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }
             }
           }
-        },
-        scales: {
-          y: {
-            min: 0, max: 1,
-            grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
-            ticks: { color: '#64748b', font: { family: 'Inter', size: 11 }, stepSize: 0.25 }
-          },
-          x: {
-            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-            ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }
-          }
         }
-      }
-    });
+      });
 
-    setInterval(fetchDashboard, 800);
-    setInterval(checkLatest, 2000);
-  }
-
-  async function checkLatest() {
-    try {
-      const res = await fetch('/latest');
-      const data = await res.json();
-      const bar = document.getElementById('activeTaskBar');
-      const autoSync = document.getElementById('autoSync').checked;
-
-      if (data.task_id && data.task_id !== currentTaskId) {
-        if (autoSync) {
-          switchToActive(data.task_id);
-          return;
-        }
-        const label = data.task_id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        document.getElementById('activeTaskMsg').textContent = `Background activity detected on [${label}]`;
-        bar.style.display = 'flex';
-        window.latestActiveTaskId = data.task_id;
-      } else {
-        bar.style.display = 'none';
-      }
-    } catch(e) {}
-  }
-
-  function switchToActive(tid) {
-    const target = tid || window.latestActiveTaskId;
-    if (target) {
-      currentTaskId = target;
-      document.getElementById('taskSelect').value = currentTaskId;
-      fetchDashboard();
+      setInterval(fetchDashboard, 800);
+      setInterval(checkLatest, 2000);
     }
-  }
 
-  async function fetchDashboard() {
-    try {
-      const res = await fetch(`/state?task_id=${currentTaskId}`);
-      if (res.status === 400 || res.status === 404) return;
-      const data = await res.json();
+    async function checkLatest() {
+      try {
+        const res = await fetch('/latest');
+        const data = await res.json();
+        const bar = document.getElementById('activeTaskBar');
+        const autoSync = document.getElementById('autoSync').checked;
 
-      if (data.not_started) { setStatus('waiting', 'Waiting for Agent'); return; }
-      const done = data.terminated || data.truncated;
-      setStatus(done ? 'done' : 'running', done ? '✓ MISSION COMPLETE' : 'Agent Running...');
-
-      document.getElementById('stepCounter').textContent =
-        `STEP ${data.observation.step} / ${data.observation.max_steps}`;
-
-      // Chart update
-      const histRewards = data.history.map(h => h.reward);
-      document.getElementById('chartInfo').textContent =
-        `${histRewards.length} reward points`;
-
-      rewardChart.data.labels = histRewards.map((_, i) => `${i + 1}`);
-      rewardChart.data.datasets[0].data = histRewards;
-      rewardChart.update('none');
-
-      // Cumulative Reward Display
-      document.getElementById('totalScore').textContent = (+data.reward).toFixed(2);
-      
-      const remark = document.getElementById('graderRemark');
-      remark.innerHTML = `<div class="mb-1">${data.terminated ? 'SUCCESS: Board Cleared' : (data.truncated ? 'TIME UP: Incomplete' : 'Active Mission')}</div>`;
-
-      if (data.current_obs) {
-        const obs = data.current_obs;
-
-        // Constraints
-        const cLog = document.getElementById('constraintLog');
-        cLog.innerHTML = '';
-        if (obs.constraints && obs.constraints.length) {
-          obs.constraints.forEach(c => {
-            const chip = document.createElement('div');
-            chip.className = 'constraint-chip';
-            chip.innerHTML = `⚠ ${c}`;
-            cLog.appendChild(chip);
-          });
+        if (data.task_id && data.task_id !== currentTaskId) {
+          if (autoSync) {
+            switchToActive(data.task_id);
+            return;
+          }
+          const label = data.task_id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          document.getElementById('activeTaskMsg').textContent = `Background activity detected on [${label}]`;
+          bar.style.display = 'flex';
+          window.latestActiveTaskId = data.task_id;
         } else {
-          cLog.innerHTML = '<span class="text-slate-400 text-xs italic">No constraints for this scenario.</span>';
+          bar.style.display = 'none';
         }
+      } catch (e) { }
+    }
 
-        // Build dispatch map from history
-        const dispatchMap = {};
-        (obs.previous_actions || []).forEach(paStr => {
-          try {
-            const pa = JSON.parse(paStr);
-            (pa.dispatches || []).forEach(d => {
-              if (!dispatchMap[d.incident_id]) dispatchMap[d.incident_id] = new Set();
-              dispatchMap[d.incident_id].add(d.unit);
+    function switchToActive(tid) {
+      const target = tid || window.latestActiveTaskId;
+      if (target) {
+        currentTaskId = target;
+        document.getElementById('taskSelect').value = currentTaskId;
+        fetchDashboard();
+      }
+    }
+
+    async function fetchDashboard() {
+      try {
+        const res = await fetch(`/state?task_id=${currentTaskId}`);
+        if (res.status === 400 || res.status === 404) return;
+        const data = await res.json();
+
+        if (data.not_started) { setStatus('waiting', 'Waiting for Agent'); return; }
+        const done = data.terminated || data.truncated;
+        setStatus(done ? 'done' : 'running', done ? '✓ MISSION COMPLETE' : 'Agent Running...');
+
+        document.getElementById('stepCounter').textContent =
+          `STEP ${data.observation.step} / ${data.observation.max_steps}`;
+
+        // Chart update
+        const histRewards = data.history.map(h => h.reward);
+        document.getElementById('chartInfo').textContent =
+          `${histRewards.length} reward points`;
+
+        rewardChart.data.labels = histRewards.map((_, i) => `${i + 1}`);
+        rewardChart.data.datasets[0].data = histRewards;
+        rewardChart.update('none');
+
+        // Cumulative Reward Display
+        document.getElementById('totalScore').textContent = (+data.reward).toFixed(2);
+
+        const remark = document.getElementById('graderRemark');
+        remark.innerHTML = `<div class="mb-1">${data.terminated ? 'SUCCESS: Board Cleared' : (data.truncated ? 'TIME UP: Incomplete' : 'Active Mission')}</div>`;
+
+        if (data.observation) {
+          const obs = data.observation;
+
+          // Constraints
+          const cLog = document.getElementById('constraintLog');
+          cLog.innerHTML = '';
+          if (obs.constraints && obs.constraints.length) {
+            obs.constraints.forEach(c => {
+              const chip = document.createElement('div');
+              chip.className = 'constraint-chip';
+              chip.innerHTML = `⚠ ${c}`;
+              cLog.appendChild(chip);
             });
-          } catch(e) {}
-        });
+          } else {
+            cLog.innerHTML = '<span class="text-slate-400 text-xs italic">No constraints for this scenario.</span>';
+          }
 
-        // Incident grid
-        const grid = document.getElementById('incidentGrid');
-        grid.innerHTML = '';
-        document.getElementById('matrixMeta').textContent =
-          `${obs.active_incidents.length} active incident${obs.active_incidents.length !== 1 ? 's' : ''}`;
+          // Build dispatch map from history
+          const dispatchMap = {};
+          (obs.previous_actions || []).forEach(paStr => {
+            try {
+              const pa = JSON.parse(paStr);
+              (pa.dispatches || []).forEach(d => {
+                if (!dispatchMap[d.incident_id]) dispatchMap[d.incident_id] = new Set();
+                dispatchMap[d.incident_id].add(d.unit);
+              });
+            } catch (e) { }
+          });
 
-        obs.active_incidents.forEach(inc => {
-          const card = document.createElement('div');
-          card.className = `inc-card ${sevClass(inc.severity)}`;
+          // Incident grid
+          const grid = document.getElementById('incidentGrid');
+          grid.innerHTML = '';
+          document.getElementById('matrixMeta').textContent =
+            `${obs.active_incidents.length} active incident${obs.active_incidents.length !== 1 ? 's' : ''}`;
 
-          const dispatched = dispatchMap[inc.id] ? [...dispatchMap[inc.id]] : [];
-          const unitHTML = dispatched.length
-            ? dispatched.map(u =>
+          obs.active_incidents.forEach(inc => {
+            const card = document.createElement('div');
+            card.className = `inc-card ${sevClass(inc.severity)}`;
+
+            const dispatched = dispatchMap[inc.id] ? [...dispatchMap[inc.id]] : [];
+            const unitHTML = dispatched.length
+              ? dispatched.map(u =>
                 `<span class="unit-badge">${getIcon(u)} ${u.replace(/^unit_/, '')}</span>`
               ).join(' ')
-            : '<span class="awaiting">Awaiting dispatch...</span>';
+              : '<span class="awaiting">Awaiting dispatch...</span>';
 
-          card.innerHTML = `
+            card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
               <div>
                 <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:.05em;margin-bottom:2px;">${inc.id} · ${inc.location || '—'}</div>
@@ -554,45 +685,46 @@
               <span class="severity-badge">${inc.severity}</span>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:5px;">${unitHTML}</div>`;
-          grid.appendChild(card);
-        });
+            grid.appendChild(card);
+          });
 
-        // Action log
-        const logEl = document.getElementById('aiLog');
-        logEl.innerHTML = '';
-        const actions = [...(obs.previous_actions || [])].reverse();
-        if (!actions.length) {
-          logEl.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;margin-top:20px;font-style:italic;">No actions yet...</div>';
-        } else {
-          actions.forEach(paStr => {
-            try {
-              const pa = JSON.parse(paStr);
-              const r = +pa.reward;
-              const rColor = r >= 0.8 ? '#15803d' : r >= 0.5 ? '#b45309' : '#dc2626';
-              const dispHtml = (pa.dispatches || []).length
-                ? (pa.dispatches || []).map(d =>
-                    `<span class="unit-badge" style="font-size:10px;">${getIcon(d.unit)} ${d.unit.replace(/^unit_/,'')} → ${d.incident_id}</span>`
+          // Action log
+          const logEl = document.getElementById('aiLog');
+          logEl.innerHTML = '';
+          const actions = [...(obs.previous_actions || [])].reverse();
+          if (!actions.length) {
+            logEl.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;margin-top:20px;font-style:italic;">No actions yet...</div>';
+          } else {
+            actions.forEach(paStr => {
+              try {
+                const pa = JSON.parse(paStr);
+                const r = +pa.reward;
+                const rColor = r >= 0.8 ? '#15803d' : r >= 0.5 ? '#b45309' : '#dc2626';
+                const dispHtml = (pa.dispatches || []).length
+                  ? (pa.dispatches || []).map(d =>
+                    `<span class="unit-badge" style="font-size:10px;">${getIcon(d.unit)} ${d.unit.replace(/^unit_/, '')} → ${d.incident_id}</span>`
                   ).join(' ')
-                : '<span style="color:#94a3b8;font-size:10px;font-style:italic;">No dispatch</span>';
+                  : '<span style="color:#94a3b8;font-size:10px;font-style:italic;">No dispatch</span>';
 
-              const row = document.createElement('div');
-              row.className = 'log-row';
-              row.innerHTML = `
+                const row = document.createElement('div');
+                row.className = 'log-row';
+                row.innerHTML = `
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
                   <span style="font-size:10px;font-weight:700;color:#64748b;background:#e2e8f0;padding:2px 7px;border-radius:3px;">TURN ${pa.step}</span>
                   <span style="font-size:13px;font-weight:800;color:${rColor};font-family:monospace;">${r.toFixed(3)}</span>
                 </div>
                 <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;">${dispHtml}</div>
                 ${pa.reasoning ? `<div style="font-size:11px;color:#475569;font-style:italic;line-height:1.5;border-top:1px solid #e2e8f0;padding-top:5px;margin-top:2px;">"${pa.reasoning}"</div>` : ''}`;
-              logEl.appendChild(row);
-            } catch(e) {}
-          });
+                logEl.appendChild(row);
+              } catch (e) { }
+            });
+          }
         }
-      }
-    } catch(e) { console.error(e); }
-  }
+      } catch (e) { console.error(e); }
+    }
 
-  init();
-</script>
+    init();
+  </script>
 </body>
+
 </html>
