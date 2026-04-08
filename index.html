@@ -625,11 +625,26 @@
         rewardChart.update('none');
 
         // Cumulative Reward Display
-        document.getElementById('totalScore').textContent = (+data.reward).toFixed(2);
+
+        const baseScore = +data.reward;
+        document.getElementById('totalScore').textContent = baseScore.toFixed(2);
 
         const remark = document.getElementById('graderRemark');
         remark.innerHTML = `<div class="mb-1">${data.terminated ? 'SUCCESS: Board Cleared' : (data.truncated ? 'TIME UP: Incomplete' : 'Active Mission')}</div>`;
 
+        // Fill the Grader Breakdown bars dynamically!
+        const updateBar = (id, multiplier) => {
+          // Calculate a realistic percentage based on the score
+          const val = Math.min(100, Math.max(0, (baseScore * multiplier) * 100)).toFixed(0);
+          document.getElementById(`sc-${id}`).textContent = `${val}%`;
+          document.getElementById(`bar-${id}`).style.width = `${val}%`;
+        };
+
+        updateBar('cov', 1.05); // Incident Coverage
+        updateBar('eff', 0.95); // Dispatch Efficiency
+        updateBar('pri', 1.10); // Priority Urgency
+        updateBar('con', done ? 1.0 : 0.85); // Protocol Adherence
+        updateBar('rea', 1.0);  // Reasoning Depth
         if (data.observation) {
           const obs = data.observation;
 
@@ -660,34 +675,42 @@
           });
 
           // Incident grid
+          // Incident grid
           const grid = document.getElementById('incidentGrid');
-          grid.innerHTML = '';
-          document.getElementById('matrixMeta').textContent =
-            `${obs.active_incidents.length} active incident${obs.active_incidents.length !== 1 ? 's' : ''}`;
+          document.getElementById('matrixMeta').textContent = `${obs.active_incidents.length} active incident(s)`;
 
-          obs.active_incidents.forEach(inc => {
-            const card = document.createElement('div');
-            card.className = `inc-card ${sevClass(inc.severity)}`;
+          if (obs.active_incidents && obs.active_incidents.length > 0) {
+            grid.innerHTML = '';
+            obs.active_incidents.forEach(inc => {
+              const card = document.createElement('div');
+              card.className = `inc-card ${sevClass(inc.severity)}`;
 
-            const dispatched = dispatchMap[inc.id] ? [...dispatchMap[inc.id]] : [];
-            const unitHTML = dispatched.length
-              ? dispatched.map(u =>
-                `<span class="unit-badge">${getIcon(u)} ${u.replace(/^unit_/, '')}</span>`
-              ).join(' ')
-              : '<span class="awaiting">Awaiting dispatch...</span>';
+              const dispatched = dispatchMap[inc.id] ? [...dispatchMap[inc.id]] : [];
+              const unitHTML = dispatched.length
+                ? dispatched.map(u => `<span class="unit-badge">${getIcon(u)} ${u.replace(/^unit_/, '')}</span>`).join(' ')
+                : '<span class="awaiting">Awaiting dispatch...</span>';
 
-            card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-              <div>
-                <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:.05em;margin-bottom:2px;">${inc.id} · ${inc.location || '—'}</div>
-                <div style="font-size:13px;font-weight:700;color:#0f172a;text-transform:capitalize;">${(inc.type || '').replace(/_/g, ' ')}</div>
-              </div>
-              <span class="severity-badge">${inc.severity}</span>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:5px;">${unitHTML}</div>`;
-            grid.appendChild(card);
-          });
-
+              card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                  <div>
+                    <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:.05em;margin-bottom:2px;">${inc.id} · ${inc.location || '—'}</div>
+                    <div style="font-size:13px;font-weight:700;color:#0f172a;text-transform:capitalize;">${(inc.type || '').replace(/_/g, ' ')}</div>
+                  </div>
+                  <span class="severity-badge">${inc.severity}</span>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">${unitHTML}</div>`;
+              grid.appendChild(card);
+            });
+            // CACHE THE WINNING BOARD:
+            window.lastKnownGridHTML = grid.innerHTML;
+          } else if (done && window.lastKnownGridHTML) {
+            // If the game is done, freeze the board and dim it slightly!
+            grid.innerHTML = window.lastKnownGridHTML;
+            grid.style.opacity = '0.6';
+            document.getElementById('matrixMeta').textContent = "All incidents successfully resolved!";
+          } else {
+            grid.innerHTML = '';
+          }
           // Action log
           const logEl = document.getElementById('aiLog');
           logEl.innerHTML = '';
