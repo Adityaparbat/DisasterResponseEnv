@@ -67,12 +67,25 @@ python inference.py
 ## 📂 File Structure
 
 ```text
-├── env.py            <-- Core MDP Logic & Reward Shaping
-├── app.py            <-- FastAPI Server (OpenEnv Standard)
-├── models.py         <-- Pydantic Data Schemas
-├── tasks.py          <-- Scenario Definitions & Graders
-├── gym_wrapper.py    <-- Gymnasium Interface for RL training
-├── train.py          <-- PPO Training Pipeline (SB3)
-├── inference.py      <-- Submission-Ready LLM Evaluator
-└── walkthrough.md    <-- Detailed Architectural Analysis
+## 📂 File Structure
+
+```text
+├── server/
+│   └── app.py            <-- FastAPI Server (OpenEnv Standard)
+├── .gitignore            <-- Git ignore rules
+├── Dockerfile            <-- Container setup for deployment
+├── README.md             <-- Project documentation
+├── env.py                <-- Core MDP Logic & Reward Shaping
+├── evaluate_rl.py        <-- Evaluation script for trained RL baselines
+├── gym_wrapper.py        <-- Gymnasium Interface for RL training
+├── index.html            <-- Emergency Command Center UI Dashboard
+├── inference.py          <-- Submission-Ready LLM Evaluator
+├── models.py             <-- Pydantic Data Schemas
+├── openenv.yaml          <-- OpenEnv configuration and metadata
+├── pyproject.toml        <-- Project build system and dependencies
+├── requirements.txt      <-- Python package dependencies
+├── tasks.py              <-- Scenario Definitions & Graders
+├── train.py              <-- PPO Training Pipeline (SB3)
+├── uv.lock               <-- Dependency lock file for strict reproducibility
+└── walkthrough.md        <-- Detailed Architectural Analysis
 ```
