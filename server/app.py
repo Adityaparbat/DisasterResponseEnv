@@ -7,6 +7,7 @@ Standardized OpenEnv Layout (v0.2.0 compliant).
 import os
 import sys
 import json
+import math
 from typing import Optional, List, Dict, Any
 
 # Ensure project root is in path for imports from parent directory
@@ -30,6 +31,10 @@ app = FastAPI(
 # Global store for active environments (task_id -> env instance)
 _envs: Dict[str, DisasterResponseEnv] = {}
 LATEST_ACTIVE_TASK = "single_incident_response"
+
+def sigmoid_normalize(x):
+    """Unified Normalizer: Maps raw MDP return (-inf, inf) to grader-friendly (0.01, 0.99)"""
+    return 0.01 + (0.98 * (1 / (1 + math.exp(-x))))
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -119,12 +124,24 @@ async def get_state(task_id: str):
             return JSONResponse(content={"not_started": True})
         
         obs = env._make_obs()
+        
+        # Calculate scores from the new rich history object list
+        raw_rewards = [h["reward"] for h in env._history]
+        total_raw = sum(raw_rewards) if raw_rewards else 0.0
+        
+        # Normalize for the dashboard's (0.01, 0.99) chart limits
+        normalized_history = []
+        for h in env._history:
+            h_copy = h.copy()
+            h_copy["reward"] = sigmoid_normalize(h["reward"])
+            normalized_history.append(h_copy)
+
         return JSONResponse(content=jsonable_encoder({
             "observation": obs.model_dump(),
-            "reward": sum(json.loads(h) if isinstance(h, str) else h for h in env._history) if env._history else 0.0,
+            "reward": sigmoid_normalize(total_raw),
             "terminated": env._done and len(env.active_incidents) == 0,
             "truncated": env._done and len(env.active_incidents) > 0,
-            "history": [json.loads(h) if isinstance(h, str) else h for h in env._history]
+            "history": normalized_history
         }))
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

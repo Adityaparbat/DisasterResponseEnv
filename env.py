@@ -32,7 +32,6 @@ class DisasterResponseEnv:
         self.available_units: List[str] = copy.deepcopy(self.task["initial_resources"])
         
         # Track units currently deployed (busy) and when they return
-        # Format: {"unit_id": "id", "free_at_step": int}
         self.busy_units: List[Dict[str, Any]] = []
 
         # Remove unavailable units (maintenance, etc) from pool permanently
@@ -70,7 +69,6 @@ class DisasterResponseEnv:
         self.busy_units = still_busy
 
         # 2. State Transition: Process New Dispatches
-        turn_assignments: Dict[str, List[str]] = {} # inc_id -> list of unit TYPES
         identity_locks = self.task.get("identity_locked_units", {})
         
         coverage_raw = 0.0
@@ -112,14 +110,14 @@ class DisasterResponseEnv:
                     if unit_type in saturation_tracker[inc_id]:
                         req_count = target_inc.requires.count(unit_type)
                         if saturation_tracker[inc_id][unit_type] >= req_count:
-                            efficiency_penalty += 1.0 # Significant penalty for redundancy
+                            efficiency_penalty += 1.0
                             info["violations"].append(f"Inefficiency: {unit_type} is redundant for {inc_id}.")
                         saturation_tracker[inc_id][unit_type] += 1
                     else:
-                        efficiency_penalty += 0.5 # Wrong type
+                        efficiency_penalty += 0.5
                         info["violations"].append(f"Wrong Type: {unit_type} not needed for {inc_id}.")
                 else:
-                    efficiency_penalty += 0.5 # Incident doesn't exist
+                    efficiency_penalty += 0.5
 
                 # Mark unit as busy
                 self.available_units.remove(unit)
@@ -159,32 +157,35 @@ class DisasterResponseEnv:
         # 4. Final Reward Synthesis
         active_count = max(1, len(saturation_tracker))
         coverage_norm = coverage_raw / active_count
-        
-        # INCREASED Weights to suppress reward hacking
         reward = (coverage_norm * 0.4) + (priority_bonus * 0.4) - (constraint_penalty * 0.4) - (efficiency_penalty * 0.3)
         
-        # Speed Factor
         speed_factor = max(0.5, 1.1 - (self._step * 0.1))
         reward = reward * speed_factor
-
-        # Clip BASE signal to standard RL range [-1, 1]
         reward = max(-1.0, min(1.0, reward))
 
-        # 5. Global Modifiers (Outside the clip to ensure impact)
         terminated = len(self.active_incidents) == 0
         truncated = (self._step >= self._max) or (step_violations >= 4)
         self._done = terminated or truncated
 
         if terminated:
-            reward += 2.0 # BOARD CLEARED
+            reward += 2.0
             info["reason"] += "Board cleared."
         elif step_violations >= 4:
-            reward -= 5.0 # FATAL SPAM PENALTY
+            reward -= 5.0
             info["reason"] += "Mission aborted: Excessive violations."
         elif truncated:
             info["reason"] += "Max steps reached."
 
-        self._history.append(reward)
+        # 5. State Management for UI/Logs
+        history_entry = {
+            "step": self._step,
+            "reward": float(reward),
+            "dispatches": [d.model_dump() for d in dispatches],
+            "reasoning": action.reasoning,
+            "violations": info["violations"]
+        }
+        self._history.append(history_entry)
+        
         return StepResult(
             observation=self._make_obs(),
             reward=round(float(reward), 4),
@@ -197,6 +198,9 @@ class DisasterResponseEnv:
         manifest = self.task["resources_manifest"]
         busy_status = {bu["unit_id"]: bu["free_at_step"] - self._step for bu in self.busy_units}
         
+        # UI expects JSON strings in previous_actions
+        previous_actions_json = [_json.dumps(h) for h in self._history]
+
         return Observation(
             step=self._step,
             max_steps=self._max,
@@ -205,5 +209,5 @@ class DisasterResponseEnv:
             busy_units=busy_status,
             resources_manifest=manifest,
             constraints=self.task.get("constraints", []),
-            previous_actions=[round(r, 4) for r in self._history if isinstance(r, (int, float))]
+            previous_actions=previous_actions_json
         )
