@@ -30,14 +30,16 @@ TASKS = {
                 "type": "structural_fire",
                 "severity": "critical",
                 "requires": ["fire_truck", "ambulance"],
-                "location": "45 Oak Street"
+                "location": "45 Oak Street",
+                "time_to_resolve": 2
             },
             {
                 "id": "INC-002",
                 "type": "road_hazard",
                 "severity": "low",
                 "requires": ["police"],
-                "location": "Bridge Road"
+                "location": "Bridge Road",
+                "time_to_resolve": 1
             }
         ],
         "constraints": [
@@ -67,21 +69,24 @@ TASKS = {
                 "type": "cardiac_arrest",
                 "severity": "critical",
                 "requires": ["ambulance"],
-                "location": "City Hospital lobby"
+                "location": "City Hospital lobby",
+                "time_to_resolve": 3
             },
             {
                 "id": "INC-002",
                 "type": "vehicle_collision",
                 "severity": "moderate",
                 "requires": ["police"],
-                "location": "Highway 7"
+                "location": "Highway 7",
+                "time_to_resolve": 2
             },
             {
                 "id": "INC-003",
                 "type": "false_alarm",
                 "severity": "none",
                 "requires": [],
-                "location": "88 Maple Drive"
+                "location": "88 Maple Drive",
+                "time_to_resolve": 1
             }
         ],
         "constraints": [
@@ -121,14 +126,16 @@ TASKS = {
                 "type": "gas_leak",
                 "severity": "critical",
                 "requires": ["hazmat", "fire_truck"],
-                "location": "Riverside Mall"
+                "location": "Riverside Mall",
+                "time_to_resolve": 4
             },
             {
                 "id": "INC-002",
                 "type": "psychiatric_crisis",
                 "severity": "moderate",
                 "requires": ["mental_health", "police"],
-                "location": "8 Pine Avenue"
+                "location": "8 Pine Avenue",
+                "time_to_resolve": 3
             }
         ],
         "constraints": [
@@ -168,19 +175,23 @@ TASKS = {
         "initial_incidents": [
             {
                 "id": "INC-001", "type": "bridge_collapse", "severity": "critical", 
-                "requires": ["marine_unit", "aviation", "ambulance", "police"], "location": "Bridge"
+                "requires": ["marine_unit", "aviation", "ambulance", "police"], "location": "Bridge",
+                "time_to_resolve": 4
             },
             {
                 "id": "INC-002", "type": "hostage_situation", "severity": "critical", 
-                "requires": ["police", "bomb_squad", "ambulance"], "location": "City Bank"
+                "requires": ["police", "bomb_squad", "ambulance"], "location": "City Bank",
+                "time_to_resolve": 4
             },
             {
                 "id": "INC-003", "type": "electrical_fire", "severity": "critical", 
-                "requires": ["fire_truck", "hazmat"], "location": "Server Farm"
+                "requires": ["fire_truck", "hazmat"], "location": "Server Farm",
+                "time_to_resolve": 3
             },
             {
                 "id": "INC-004", "type": "chemical_spill", "severity": "moderate", 
-                "requires": ["hazmat", "police"], "location": "Route 6"
+                "requires": ["hazmat", "police"], "location": "Route 6",
+                "time_to_resolve": 2
             }
         ],
         "constraints": [

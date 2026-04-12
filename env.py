@@ -50,7 +50,7 @@ class DisasterResponseEnv:
 
     async def step(self, action: Action) -> StepResult:
         if self._done:
-            raise RuntimeError("Episode finished â€” call reset() first.")
+            raise RuntimeError("Episode finished — call reset() first.")
 
         self._step += 1
         reward = 0.0
@@ -58,26 +58,37 @@ class DisasterResponseEnv:
         
         manifest = self.task["resources_manifest"]
         dispatches = action.dispatches or []
+        recalls = action.recalls or []
         
-        # 1. State Transition: Release units that finished their work
-        still_busy = []
-        for bu in self.busy_units:
-            if bu["free_at_step"] <= self._step:
-                self.available_units.append(bu["unit_id"])
-            else:
-                still_busy.append(bu)
-        self.busy_units = still_busy
-
-        # 2. State Transition: Process New Dispatches
         identity_locks = self.task.get("identity_locked_units", {})
         
-        coverage_raw = 0.0
-        constraint_penalty = 0.0
-        efficiency_penalty = 0.0
-        step_violations = 0
+        # 1. State Transition: Process Recalls First
+        for r in recalls:
+            unit = r.unit
+            inc_id = r.incident_id
+            target_inc = next((i for i in self.active_incidents if i.id == inc_id), None)
+            if target_inc and unit in target_inc.assigned_units:
+                target_inc.assigned_units.remove(unit)
+                
+            # Remove from busy units and return to available
+            self.busy_units = [bu for bu in self.busy_units if bu.get("unit_id") != unit]
+            if unit not in self.available_units:
+                self.available_units.append(unit)
+                info["reason"] += f"Recalled {unit} from {inc_id}. "
 
         # Saturation tracker for over-dispatching checks
         saturation_tracker = {inc.id: {rtype: 0 for rtype in set(inc.requires)} for inc in self.active_incidents}
+        # Prepopulate with existing assignments
+        for inc in self.active_incidents:
+            for u in inc.assigned_units:
+                u_type = manifest.get(u, "unknown")
+                if u_type in saturation_tracker[inc.id]:
+                    saturation_tracker[inc.id][u_type] += 1
+
+        # 2. State Transition: Process New Dispatches
+        constraint_penalty = 0.0
+        efficiency_penalty = 0.0
+        step_violations = 0
 
         for d in dispatches:
             unit = d.unit
@@ -113,15 +124,17 @@ class DisasterResponseEnv:
                             efficiency_penalty += 1.0
                             info["violations"].append(f"Inefficiency: {unit_type} is redundant for {inc_id}.")
                         saturation_tracker[inc_id][unit_type] += 1
+                        target_inc.assigned_units.append(unit)
                     else:
                         efficiency_penalty += 0.5
                         info["violations"].append(f"Wrong Type: {unit_type} not needed for {inc_id}.")
+                        target_inc.assigned_units.append(unit)
                 else:
                     efficiency_penalty += 0.5
 
-                # Mark unit as busy
+                # Mark unit as busy indefinitely locked
                 self.available_units.remove(unit)
-                self.busy_units.append({"unit_id": unit, "free_at_step": self._step + 2})
+                self.busy_units.append({"unit_id": unit, "free_at_step": -1})
             else:
                 constraint_penalty += 1.0
                 step_violations += 1
@@ -130,6 +143,7 @@ class DisasterResponseEnv:
         # 3. Reward Calculation: Progress Tracking
         resolved_indices = []
         priority_bonus = 0.0
+        coverage_raw = 0.0
         
         for i, inc in enumerate(self.active_incidents):
             needed = inc.requires
@@ -143,21 +157,31 @@ class DisasterResponseEnv:
             coverage_raw += local_coverage
 
             if local_coverage >= 1.0:
-                resolved_indices.append(i)
-                if inc.severity == "critical":
-                    priority_bonus += 1.0
-                elif inc.severity == "moderate":
-                    priority_bonus += 0.5
-                info["reason"] += f"Resolved {inc.id}. "
+                inc.turns_worked += 1
+                if inc.turns_worked >= inc.time_to_resolve:
+                    resolved_indices.append(i)
+                    if inc.severity == "critical":
+                        priority_bonus += 1.0
+                    elif inc.severity == "moderate":
+                        priority_bonus += 0.5
+                    info["reason"] += f"Resolved {inc.id}. "
+                else:
+                    reward -= 0.1 # Still active time penalty while working on it
+            else:
+                reward -= 0.1 # Time penalty
 
-        # Remove resolved
+        # Remove resolved and FREE THEIR UNITS
         for idx in sorted(resolved_indices, reverse=True):
-            self.active_incidents.pop(idx)
+            resolved_inc = self.active_incidents.pop(idx)
+            for u in resolved_inc.assigned_units:
+                self.busy_units = [bu for bu in self.busy_units if bu.get("unit_id") != u]
+                if u not in self.available_units:
+                    self.available_units.append(u)
 
         # 4. Final Reward Synthesis
         active_count = max(1, len(saturation_tracker))
         coverage_norm = coverage_raw / active_count
-        reward = (coverage_norm * 0.4) + (priority_bonus * 0.4) - (constraint_penalty * 0.4) - (efficiency_penalty * 0.3)
+        reward += (coverage_norm * 0.4) + (priority_bonus * 0.4) - (constraint_penalty * 0.4) - (efficiency_penalty * 0.3)
         
         speed_factor = max(0.5, 1.1 - (self._step * 0.1))
         reward = reward * speed_factor
@@ -181,6 +205,7 @@ class DisasterResponseEnv:
             "step": self._step,
             "reward": float(reward),
             "dispatches": [d.model_dump() for d in dispatches],
+            "recalls": [r.model_dump() for r in recalls],
             "reasoning": action.reasoning,
             "violations": info["violations"]
         }

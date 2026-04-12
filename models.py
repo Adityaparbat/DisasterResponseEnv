@@ -8,6 +8,9 @@ class Incident(BaseModel):
     requires: List[str]
     location: str
     notes: Optional[str] = None
+    time_to_resolve: int = 1
+    turns_worked: int = 0
+    assigned_units: List[str] = []
 
 class Observation(BaseModel):
     step: int
@@ -25,6 +28,7 @@ class Dispatch(BaseModel):
 
 class Action(BaseModel):
     dispatches: List[Dispatch] = []
+    recalls: List[Dispatch] = []
     reasoning: str = ""
     priority_order: Optional[List[str]] = None
     reserved_units: Optional[List[str]] = None
