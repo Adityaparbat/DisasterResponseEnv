@@ -29,38 +29,58 @@ tasks:
       Gas leak and psychiatric crisis with a faulty fire truck and unavailable hazmat unit
       listed in the dispatch log. Agent must avoid forbidden units and reserve
       fire suppression capacity for potential escalation.
+      Incidents require 2-3 turns to resolve.
+
+  - id: citywide_crisis_management
+    difficulty: master
+    description: >
+      Four simultaneous high-stakes incidents across the city. Features identity-locked units
+      (INC-003 requires unit_delta_4 only), saturation penalties, and incidents requiring
+      up to 4 turns to resolve. Tests sustained multi-turn resource management under pressure.
 
 observation_space:
   task_id: string
   scenario: string
   resources_manifest: object
-  available_resources: list
+  available_units: list
+  busy_units: object
   active_incidents: list
-  constraints: list
   step: integer
   max_steps: integer
   previous_actions: list
 
 action_space:
-  dispatches: list
-  reasoning: string
-  priority_order: list (optional)
-  reserved_units: list (optional)
+  dispatches: list                  # Units to assign to incidents this turn
+  recalls: list                     # Units to pull back from active incidents (optional)
+  reasoning: string                 # Agent's explanation of its strategy
+
+incident_schema:
+  id: string
+  type: string
+  severity: string                  # critical | moderate | low
+  requires: list                    # Unit types needed for resolution
+  time_to_resolve: integer          # Turns needed with full coverage (1-4)
+  turns_worked: integer             # Progress tracker
+  assigned_units: list              # Units currently locked to this incident
 
 reward:
-  range: [0.0, 1.0]
+  range: [-1.0, 1.0]
+  normalized_output: [0.01, 0.99]   # Sigmoid-normalized for grader compliance
   components:
-    coverage_score:   {weight: 0.35, description: Correct unit types dispatched to incidents}
-    priority_score:   {weight: 0.25, description: Critical incidents handled before moderate/low}
-    efficiency_score: {weight: 0.20, description: No duplicates, reserved capacity where required}
-    reasoning_score:  {weight: 0.10, description: Clear explanation of triage and constraint adherence}
-    constraint_score: {weight: 0.10, description: Forbidden/unavailable units not dispatched}
+    board_clearance:    {value: "+2.0",  description: All incidents resolved}
+    coverage_score:     {weight: 0.40,   description: Correct unit types dispatched}
+    priority_bonus:     {value: "+1.0/+0.5", description: Critical/moderate incidents resolved}
+    time_penalty:       {value: "-0.1/turn", description: Per active incident per step}
+    constraint_penalty: {weight: 0.40,   description: Unavailable/identity-locked unit dispatched}
+    efficiency_penalty: {weight: 0.30,   description: Redundant unit sent to saturated incident}
+    fatal_abort:        {value: "-5.0",  description: 4+ critical violations in one turn}
 
 baseline:
   model: Qwen/Qwen2.5-72B-Instruct
   endpoint: https://router.huggingface.co/v1
   expected_scores:
-    single_incident_response: ~0.82
-    multi_incident_triage: ~0.65
-    dynamic_escalation: ~0.48
-  expected_average: ~0.65
+    single_incident_response: ~0.914
+    multi_incident_triage: ~0.956
+    dynamic_escalation: ~0.905
+    citywide_crisis_management: ~0.652
+  expected_average: ~0.857
