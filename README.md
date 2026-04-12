@@ -1,3 +1,11 @@
+---
+title: Disaster Response Env
+emoji: 🏢
+colorFrom: red
+colorTo: yellow
+sdk: docker
+pinned: false
+---
 # Disaster Response RL Environment (MDP-v2)
 
 An OpenEnv-compliant, deterministic **Markov Decision Process (MDP)** where agents act as emergency dispatch controllers. This platform is designed to benchmark the coordination capability of Large Language Models (LLMs) against traditional Reinforcement Learning (RL) baselines.
