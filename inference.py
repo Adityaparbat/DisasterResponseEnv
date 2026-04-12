@@ -66,7 +66,7 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> No
 class HTTPEnvWrapper:
     def __init__(self, task_id: str):
         self.task_id = task_id
-        self.base_url = "https://adityparbat-disaster-response-env.hf.space"
+        self.base_url = "http://localhost:7860"
 
     async def reset(self) -> StepResult:
         url = f"{self.base_url}/reset"
@@ -81,6 +81,7 @@ class HTTPEnvWrapper:
         payload = {
             "task_id": self.task_id,
             "dispatches": [d.model_dump() for d in action.dispatches],
+            "recalls": [r.model_dump() for r in getattr(action, "recalls", [])],
             "reasoning": action.reasoning
         }
         data = json.dumps(payload).encode('utf-8')
@@ -186,6 +187,14 @@ async def get_model_action(client: OpenAI, obs: Observation, history: List[str])
 
 def sanitize_action(action: Action, obs: Observation) -> Action:
     """Clean-Up Wrapper: Enforces basic physical consistency (deduplication/availability)."""
+    sane_recalls = []
+    for r in getattr(action, "recalls", []):
+        if r.unit in obs.busy_units:
+            sane_recalls.append(r)
+            if r.unit not in obs.available_units:
+                obs.available_units.append(r.unit)
+    action.recalls = sane_recalls
+
     sane_dispatches = []
     used_units = set()
     for d in action.dispatches:
@@ -194,6 +203,7 @@ def sanitize_action(action: Action, obs: Observation) -> Action:
         sane_dispatches.append(d)
         used_units.add(d.unit)
     action.dispatches = sane_dispatches
+    
     return action
 
 # ==============================================================================

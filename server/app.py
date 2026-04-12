@@ -76,6 +76,7 @@ async def get_tasks():
 class StepRequest(BaseModel):
     task_id: Optional[str] = "single_incident_response"
     dispatches: List[Dict[str, str]] = [] 
+    recalls: List[Dict[str, str]] = []
     reasoning: str = ""
 
 # ------------------------------------------------------------------
@@ -160,7 +161,8 @@ async def step(request: StepRequest):
             raise HTTPException(400, "Call /reset first.")
         
         dispatches = [Dispatch(**d) for d in request.dispatches]
-        action = Action(dispatches=dispatches, reasoning=request.reasoning)
+        recalls = [Dispatch(**r) for r in request.recalls]
+        action = Action(dispatches=dispatches, recalls=recalls, reasoning=request.reasoning)
         
         result = await env.step(action)
         return JSONResponse(status_code=200, content=jsonable_encoder({
