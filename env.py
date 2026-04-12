@@ -50,7 +50,7 @@ class DisasterResponseEnv:
 
     async def step(self, action: Action) -> StepResult:
         if self._done:
-            raise RuntimeError("Episode finished — call reset() first.")
+            raise RuntimeError("Episode finished â€” call reset() first.")
 
         self._step += 1
         reward = 0.0
