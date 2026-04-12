@@ -920,9 +920,11 @@
 
         const base = +data.reward;
 
-        // THE FIX: If the simulation just started (no history), force the text to 0.00!
-        const displayScore = (data.history.length === 0) ? 0.00 : base;
-        document.getElementById('total-score-num').textContent = displayScore.toFixed(2);
+        if (data.history.length === 0) {
+          document.getElementById('total-score-num').textContent = '0.00';
+        } else {
+          document.getElementById('total-score-num').textContent = base.toFixed(2);
+        }
         document.getElementById('grader-remark').textContent = data.terminated ? 'Success — board cleared.' : (data.truncated ? 'Time up — incomplete.' : 'Active mission in progress.');
 
         const updateBar = (id, mul) => {
